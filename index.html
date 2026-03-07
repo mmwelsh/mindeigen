@@ -532,12 +532,34 @@
     e.preventDefault();
     const input = document.getElementById('email-input');
     const btn = e.target.querySelector('button');
-    btn.textContent = '✓ You\'re on the list';
-    btn.style.background = '#22c55e';
+    btn.textContent = 'Sending...';
     btn.disabled = true;
     input.disabled = true;
-    const count = document.getElementById('count-display');
-    count.textContent = parseInt(count.textContent) + 1;
+    fetch('http://195.35.8.211:5001/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: input.value.trim() })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'ok' || data.status === 'duplicate') {
+        btn.textContent = data.status === 'duplicate' ? '✓ Already on the list!' : '✓ You\'re on the list!';
+        btn.style.background = '#22c55e';
+        if (data.status === 'ok') {
+          const count = document.getElementById('count-display');
+          count.textContent = parseInt(count.textContent) + 1;
+        }
+      } else {
+        btn.textContent = 'Try again';
+        btn.disabled = false;
+        input.disabled = false;
+      }
+    })
+    .catch(() => {
+      btn.textContent = 'Try again';
+      btn.disabled = false;
+      input.disabled = false;
+    });
   }
 </script>
 </body>
