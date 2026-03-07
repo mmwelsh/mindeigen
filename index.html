@@ -34,42 +34,51 @@
 
     /* ── NAV ── */
     nav {
-      position: fixed; top: 2rem; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 1rem 2rem;
-      background: rgba(7,8,15,0.88);
-      backdrop-filter: blur(12px);
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center;
+      padding: 0 2rem;
+      height: 56px;
+      background: rgba(7,8,15,0.92);
+      backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
+    }
+    /* center block: logo + links */
+    .nav-center {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 2rem;
     }
     .logo {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.1rem; font-weight: 500;
+      font-size: 1.05rem; font-weight: 500;
       color: var(--text); text-decoration: none; letter-spacing: -0.02em;
     }
     .logo span { color: var(--accent); }
-    nav ul { display: flex; gap: 1.75rem; list-style: none; }
-    nav ul a { color: var(--dim); text-decoration: none; font-size: .875rem; transition: color .2s; }
+    nav ul { display: flex; gap: 1.6rem; list-style: none; }
+    nav ul a { color: var(--dim); text-decoration: none; font-size: .84rem; transition: color .2s; }
     nav ul a:hover { color: var(--text); }
+    /* right block: beta label + CTA stacked */
+    .nav-right {
+      margin-left: auto;
+      display: flex; flex-direction: column; align-items: flex-end;
+      gap: .12rem; padding: .35rem 0;
+    }
+    .nav-beta {
+      display: flex; align-items: center; gap: .35rem;
+      font-size: .62rem; color: var(--accent); font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .nav-beta-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+      animation: pulse 2s infinite; flex-shrink: 0;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
     .nav-cta {
       background: var(--accent); color: #fff; border: none;
-      padding: .45rem 1.1rem; border-radius: 6px; font-size: .85rem;
+      padding: .3rem .9rem; border-radius: 5px; font-size: .78rem;
       font-weight: 500; cursor: pointer; font-family: inherit;
-      transition: opacity .2s;
+      transition: opacity .2s; white-space: nowrap;
     }
     .nav-cta:hover { opacity: .85; }
-
-    /* ── TOP ANNOUNCEMENT BANNER ── */
-    .top-banner {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-      background: rgba(7,8,15,0.92); backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      padding: .45rem 1.5rem; gap: .5rem;
-      font-size: .72rem; color: var(--accent); font-weight: 500; letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    .banner-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; flex-shrink: 0; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 
     /* ── HERO ── */
     .hero {
@@ -81,20 +90,58 @@
       width: 100%; height: 100%;
       pointer-events: none; z-index: 0;
     }
-    /* hero text block — upper-left, off the animation center */
+    /* hero headline — upper-left */
     .hero-content {
       position: absolute; z-index: 1;
-      top: clamp(4.5rem, 10vh, 7rem); left: clamp(1.5rem, 5vw, 5rem);
-      max-width: min(420px, 42vw);
+      top: clamp(4rem, 9vh, 6.5rem); left: clamp(1.5rem, 5vw, 5rem);
+      max-width: min(500px, 50vw);
       text-align: left;
     }
     @media (max-width: 640px) {
-      .hero-content { max-width: 90vw; left: 1.25rem; top: 4.5rem; }
+      .hero-content { max-width: 88vw; left: 1.25rem; top: 4rem; }
+    }
+    /* kitty-corner sub — lower-right */
+    .hero-corner {
+      position: absolute; z-index: 1;
+      bottom: clamp(3.5rem, 8vh, 5.5rem); right: clamp(1.5rem, 5vw, 5rem);
+      max-width: min(320px, 34vw);
+      text-align: right;
+    }
+    @media (max-width: 640px) {
+      .hero-corner { max-width: 80vw; right: 1.25rem; bottom: 3.5rem; }
+    }
+    .hero-corner p {
+      font-size: clamp(.78rem, 1.4vw, .95rem);
+      color: var(--dim); line-height: 1.6;
+    }
+    .hero-corner .hero-tagline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(.68rem, 1.1vw, .82rem);
+      color: var(--accent2); opacity: .75; margin-top: .45rem;
+    }
+    /* bottom equation banner — spans hero floor */
+    .hero-floor {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .7rem 2rem;
+      background: rgba(7,8,15,0.55);
+      backdrop-filter: blur(6px);
+      border-top: 1px solid rgba(30,34,53,0.6);
+      font-family: 'JetBrains Mono', monospace;
+      gap: 1rem;
+    }
+    .hero-floor-left {
+      font-size: clamp(.65rem, 1.3vw, .82rem);
+      color: var(--gold); white-space: nowrap;
+    }
+    .hero-floor-right {
+      font-size: clamp(.58rem, 1.0vw, .72rem);
+      color: var(--accent2); opacity: .72; white-space: nowrap;
     }
 
     h1 {
-      font-size: clamp(1.9rem, 4.5vw, 3.8rem);
-      font-weight: 700; line-height: 1.08; letter-spacing: -0.04em;
+      font-size: clamp(2.4rem, 5.5vw, 4.8rem);
+      font-weight: 700; line-height: 1.06; letter-spacing: -0.04em;
       margin-bottom: .9rem;
     }
     h1 em {
@@ -103,24 +150,7 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .hero-sub {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: clamp(.78rem, 1.6vw, 1.05rem);
-      color: var(--gold); opacity: .92;
-      margin-bottom: .6rem; letter-spacing: .02em;
-    }
-    .hero-geb {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: clamp(.62rem, 1.1vw, .78rem);
-      color: var(--accent2); opacity: .70;
-      margin-bottom: 0; letter-spacing: .01em;
-    }
-    /* button anchored to bottom-left of hero */
-    .hero-actions {
-      position: absolute; z-index: 1;
-      bottom: clamp(2rem, 6vh, 4rem); left: clamp(1.5rem, 5vw, 5rem);
-    }
-    @media (max-width: 640px) { .hero-actions { left: 1.25rem; bottom: 2rem; } }
+    /* (hero-sub / hero-geb now live in hero-floor and hero-corner) */
     .btn-primary {
       background: var(--accent); color: #fff; border: none;
       padding: .8rem 1.8rem; border-radius: 8px; font-size: .95rem;
@@ -312,33 +342,39 @@
 
 <!-- NAV -->
 <nav>
-  <a class="logo" href="#"><span>mind</span>eigen</a>
-  <ul>
-    <li><a href="#what">Concept</a></li>
-    <li><a href="#how">How it works</a></li>
-    <li><a href="#usecases">Features</a></li>
-  </ul>
-  <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
+  <div class="nav-center">
+    <a class="logo" href="#"><span>mind</span>eigen</a>
+    <ul>
+      <li><a href="#what">Concept</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#usecases">Features</a></li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <div class="nav-beta"><span class="nav-beta-dot"></span>Private Beta</div>
+    <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
+  </div>
 </nav>
-
-<!-- TOP BANNER -->
-<div class="top-banner">
-  <span class="banner-dot"></span>
-  Private Beta &nbsp;—&nbsp; Now Accepting Applications
-</div>
 
 <!-- HERO -->
 <section class="hero">
   <canvas id="hero-canvas"></canvas>
+
+  <!-- upper-left headline -->
   <div class="hero-content">
-    <h1>Your mind has an <em>Eigenvalue</em>.</h1>
-    <p class="hero-sub">Find λ &nbsp;→&nbsp; Amplify &nbsp;→&nbsp; ∞</p>
-    <p class="hero-geb">∃G · (G ↔ ¬Bew(⌈G⌉)) ⟹ T⊬G ∧ T⊬¬G</p>
+    <h1>Your mind has an <em>Eigenvalue</em></h1>
   </div>
-  <div class="hero-actions">
-    <button class="btn-primary" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">
-      Request early access →
-    </button>
+
+  <!-- lower-right kitty-corner -->
+  <div class="hero-corner">
+    <p>A persistent AI agent, deployed in the cloud —<br/>thinking, evolving, and healing on your behalf.</p>
+    <p class="hero-tagline">∃G · (G ↔ ¬Bew(⌈G⌉)) ⟹ T⊬G ∧ T⊬¬G</p>
+  </div>
+
+  <!-- bottom equation banner -->
+  <div class="hero-floor">
+    <span class="hero-floor-left">Find λ &nbsp;→&nbsp; Amplify &nbsp;→&nbsp; ∞</span>
+    <span class="hero-floor-right">∃ a mind whose eigenvalue is irreducible — Gödel, 1931</span>
   </div>
 </section>
 
@@ -517,7 +553,7 @@
       <p>We're accepting a limited cohort for private beta. Early agents get priority access to the community skill graph — and shape the direction of the platform.</p>
       <form class="waitlist-form" onsubmit="handleSubmit(event)">
         <input type="email" id="email-input" placeholder="your@email.com" required />
-        <button type="submit" class="btn-primary">Request access →</button>
+        <button type="submit" class="btn-primary">Join the waitlist →</button>
       </form>
       <div class="waitlist-count">
         <span id="count-display">47</span> engineers and researchers already on the list
