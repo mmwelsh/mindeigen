@@ -80,6 +80,20 @@
     }
     .nav-cta:hover { opacity: .85; }
 
+    /* ── BRAIN GIF ── */
+    #brain-gif {
+      position: absolute; z-index: 1;
+      width: clamp(280px, 46vw, 600px);
+      height: auto;
+      left: 50%; top: 50%;
+      transform: translate(-38%, -52%);
+      pointer-events: none;
+      mix-blend-mode: screen;   /* black bg disappears — brain floats */
+    }
+    @media (max-width: 640px) {
+      #brain-gif { width: clamp(220px, 80vw, 360px); transform: translate(-50%, -52%); }
+    }
+
     /* ── HERO ── */
     .hero {
       min-height: 100dvh;
@@ -359,6 +373,7 @@
 <!-- HERO -->
 <section class="hero">
   <canvas id="hero-canvas"></canvas>
+  <img id="brain-gif" src="brain.gif" alt="" />
 
   <!-- upper-left headline -->
   <div class="hero-content">
@@ -576,190 +591,192 @@
 </footer>
 
 <script>
-/* ── HERO CANVAS: Brain + Eigenvector + starfield ── */
+/* ── HERO CANVAS: Lightsaber eigenvector + starfield ── */
 (function() {
   const canvas = document.getElementById('hero-canvas');
   const ctx    = canvas.getContext('2d');
+  const gifEl  = document.getElementById('brain-gif');
 
-  let W, H, stars, t0 = null, fontReady = false;
-  document.fonts.ready.then(() => { fontReady = true; });
+  let W, H, stars, t0 = null;
 
-  // ── Brain eigenvector state ──
-  let vecAngle    = Math.PI * 0.35;  // current arrow direction
-  let vecTarget   = Math.PI * 0.35;  // target (pseudo-random jumps)
-  let lastJump    = -99999;
-  let jumpInterval = 3500 + Math.random() * 3000;
-  // 3D tumble: two slow rotation axes
-  let rotY = 0, rotX = 0;
-  let rotYSpeed = 0.00045, rotXSpeed = 0.00018;
+  /* ── State machine ─────────────────────────────────────
+     HOLD  → origin & direction stable, saber at full glow
+     DRIFT → origin slides along cortex to new site
+     SETTLE→ origin arrived, direction precesses into lock
+  ──────────────────────────────────────────────────────── */
+  const S = { HOLD: 0, DRIFT: 1, SETTLE: 2 };
+  let state      = S.HOLD;
+  let stateStart = 0;
+  let holdDur    = 3200;
+  let driftDur   = 2000;
+  let settleDur  = 950;
 
+  // Origin angle on brain ellipse surface
+  let originAngle = Math.PI * 0.75;
+  let originFrom  = Math.PI * 0.75;
+  let originTo    = Math.PI * 0.75;
+
+  // Lightsaber pointing direction
+  let vecAngle = -0.4;
+  let vecFrom  = -0.4;
+  let vecTo    = -0.4;
+
+  let glowAlpha = 1.0;
+
+  function pickNewTarget() {
+    const sweep = Math.PI * 0.5 + Math.random() * Math.PI * 0.67;
+    const dir   = Math.random() < 0.5 ? 1 : -1;
+    originFrom  = originAngle;
+    originTo    = originAngle + dir * sweep;
+    vecFrom     = vecAngle;
+    vecTo       = originTo + (Math.random() - 0.5) * (Math.PI * 0.83);
+    driftDur    = 1500 + Math.random() * 1200;
+    settleDur   = 650  + Math.random() * 550;
+    holdDur     = 2400 + Math.random() * 2200;
+  }
+
+  /* Returns brain center + radii in canvas-local coords */
+  function getBrain() {
+    const gW = gifEl.offsetWidth, gH = gifEl.offsetHeight;
+    if (!gW) return { cx: W * 0.55, cy: H * 0.50, rx: H * 0.22, ry: H * 0.20 };
+    return {
+      cx: gifEl.offsetLeft + gW * (320 / 640),
+      cy: gifEl.offsetTop  + gH * (230 / 459),
+      rx: gW * (195 / 640),
+      ry: gH * (175 / 459),
+    };
+  }
+
+  function easeInOut(t) { return t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t; }
+
+  function lerpAngle(a, b, t) {
+    let d = b - a;
+    while (d >  Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return a + d * t;
+  }
+
+  /* ── Lightsaber rendering ── */
+  function drawSaber(ox, oy, angle, len, alpha) {
+    const ex = ox + Math.cos(angle) * len;
+    const ey = oy + Math.sin(angle) * len;
+
+    // Glow layers outer->inner
+    const layers = [
+      { w: 24, a: 0.05, r: 60,  g: 150, b: 255 },
+      { w: 15, a: 0.11, r: 90,  g: 180, b: 255 },
+      { w: 8,  a: 0.24, r: 140, g: 210, b: 255 },
+      { w: 4,  a: 0.52, r: 200, g: 235, b: 255 },
+      { w: 1.6,a: 0.94, r: 245, g: 252, b: 255 },
+    ];
+    ctx.lineCap = 'round';
+    for (const l of layers) {
+      ctx.beginPath();
+      ctx.moveTo(ox, oy); ctx.lineTo(ex, ey);
+      ctx.strokeStyle = `rgba(${l.r},${l.g},${l.b},${(l.a * alpha).toFixed(3)})`;
+      ctx.lineWidth = l.w;
+      ctx.stroke();
+    }
+
+    // Arrowhead
+    const hLen = Math.max(10, len * 0.10);
+    const hA   = Math.PI / 5.5;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - hLen*Math.cos(angle-hA), ey - hLen*Math.sin(angle-hA));
+    ctx.lineTo(ex - hLen*Math.cos(angle+hA), ey - hLen*Math.sin(angle+hA));
+    ctx.closePath();
+    ctx.fillStyle = `rgba(220,242,255,${(0.88*alpha).toFixed(3)})`;
+    ctx.fill();
+
+    // lambda-v label at tip
+    ctx.font = `bold ${Math.max(11, len * 0.09)}px 'JetBrains Mono', monospace`;
+    ctx.fillStyle = `rgba(224,184,74,${(0.86*alpha).toFixed(3)})`;
+    ctx.fillText('\u03bbv', ex + Math.cos(angle)*15, ey + Math.sin(angle)*15 + 4);
+
+    // Origin: pulsing spark
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.006);
+    const dr    = 3.5 + pulse * 3;
+    const dg    = ctx.createRadialGradient(ox, oy, 0, ox, oy, dr * 3);
+    dg.addColorStop(0,   `rgba(180,225,255,${(0.88*alpha).toFixed(3)})`);
+    dg.addColorStop(0.45,`rgba(100,175,255,${(0.38*alpha).toFixed(3)})`);
+    dg.addColorStop(1,   'rgba(70,130,255,0)');
+    ctx.beginPath(); ctx.arc(ox, oy, dr*3, 0, Math.PI*2);
+    ctx.fillStyle = dg; ctx.fill();
+    ctx.beginPath(); ctx.arc(ox, oy, dr*0.65, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(245,252,255,${(0.96*alpha).toFixed(3)})`; ctx.fill();
+  }
+
+  /* ── Stars ── */
   function resize() {
     W = canvas.width  = canvas.offsetWidth  || window.innerWidth;
     H = canvas.height = canvas.offsetHeight || window.innerHeight;
   }
-
-  /* ── Stars ── */
   function initStars() {
     stars = [];
-    const N = Math.min(260, Math.floor(W * H / 4800));
+    const N = Math.min(220, Math.floor(W * H / 5000));
     for (let i = 0; i < N; i++) {
       stars.push({
-        x: Math.random() * W, y: Math.random() * H,
-        r: 0.25 + Math.random() * 1.3,
-        alpha: 0.12 + Math.random() * 0.88,
-        phase: Math.random() * Math.PI * 2,
-        speed: 0.0004 + Math.random() * 0.0016,
+        x: Math.random()*W, y: Math.random()*H,
+        r: 0.2 + Math.random()*1.2,
+        alpha: 0.10 + Math.random()*0.80,
+        phase: Math.random()*Math.PI*2,
+        speed: 0.0004 + Math.random()*0.0014,
       });
     }
   }
-
-  function init() { resize(); initStars(); }
-
-  /* ── Draw stars ── */
   function drawStars(dt) {
     for (const s of stars) {
-      const tw = 0.55 + 0.45 * Math.sin(dt * s.speed + s.phase);
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(190,210,255,${s.alpha * tw})`;
-      ctx.fill();
+      const tw = 0.55 + 0.45*Math.sin(dt*s.speed + s.phase);
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(190,210,255,${s.alpha*tw})`; ctx.fill();
     }
   }
 
-  /* ── Draw brain (3D rolling sphere with neural folds) ── */
-  function drawBrain(dt, cx, cy, R) {
-    // Update pseudo-random eigenvector jump
-    if (dt - lastJump > jumpInterval) {
-      vecTarget = Math.random() * Math.PI * 2;
-      lastJump = dt;
-      jumpInterval = 2800 + Math.random() * 4200;
-    }
-    // Smooth lerp toward target direction
-    let delta = vecTarget - vecAngle;
-    while (delta >  Math.PI) delta -= Math.PI * 2;
-    while (delta < -Math.PI) delta += Math.PI * 2;
-    vecAngle += delta * 0.018;
-
-    // Update 3D tumble angles
-    rotY += rotYSpeed * 16;
-    rotX += rotXSpeed * 16;
-
-    // Project 3D rotation to 2D squish factors
-    const cosY = Math.cos(rotY);   // x-squish (Y-axis rotation)
-    const cosX = Math.cos(rotX);   // y-squish (X-axis rotation)
-    const scaleX = cosY;            // can go negative (flips)
-    const scaleY = cosX * 0.85;    // slight squish always
-
-    ctx.save();
-    ctx.translate(cx, cy);
-
-    // ── Outer glow / neural haze ──
-    const glow = ctx.createRadialGradient(0, 0, R * 0.6, 0, 0, R * 2.2);
-    glow.addColorStop(0,   'rgba(91,141,238,0.18)');
-    glow.addColorStop(0.4, 'rgba(91,141,238,0.07)');
-    glow.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.beginPath(); ctx.arc(0, 0, R * 2.2, 0, Math.PI * 2);
-    ctx.fillStyle = glow; ctx.fill();
-
-    // ── Brain sphere ──
-    ctx.save();
-    ctx.scale(scaleX, scaleY);
-
-    // Fill
-    const brainFill = ctx.createRadialGradient(-R * 0.25, -R * 0.25, 0, 0, 0, R);
-    brainFill.addColorStop(0,   'rgba(22,32,65,0.92)');
-    brainFill.addColorStop(0.6, 'rgba(10,14,30,0.95)');
-    brainFill.addColorStop(1,   'rgba(5,8,18,0.97)');
-    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2);
-    ctx.fillStyle = brainFill; ctx.fill();
-
-    // Outline
-    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(91,141,238,0.55)'; ctx.lineWidth = 1.8; ctx.stroke();
-
-    // Neural folds — bezier curves across the sphere
-    ctx.strokeStyle = 'rgba(91,141,238,0.28)'; ctx.lineWidth = 1;
-    const folds = [
-      [-R*.88, -R*.20,  -R*.30, -R*.75,  R*.30, -R*.75,  R*.88, -R*.20],
-      [-R*.80,  R*.10,  -R*.25, -R*.45,  R*.25, -R*.45,  R*.80,  R*.10],
-      [-R*.72,  R*.40,  -R*.20, -R*.10,  R*.20, -R*.10,  R*.72,  R*.40],
-      [-R*.55,  R*.70,  -R*.10,  R*.30,  R*.10,  R*.30,  R*.55,  R*.70],
-      [-R*.88, -R*.20,  -R*.55,  R*.35,  -R*.55, R*.35, -R*.88,  R*.65],
-      [ R*.88, -R*.20,   R*.55,  R*.35,   R*.55, R*.35,  R*.88,  R*.65],
-    ];
-    for (const [x0,y0,cx1,cy1,cx2,cy2,x1,y1] of folds) {
-      ctx.beginPath(); ctx.moveTo(x0,y0);
-      ctx.bezierCurveTo(cx1,cy1,cx2,cy2,x1,y1); ctx.stroke();
-    }
-    // Hemisphere divider
-    ctx.beginPath(); ctx.moveTo(0, -R);
-    ctx.bezierCurveTo(R*.12,-R*.5, R*.12,R*.5, 0, R);
-    ctx.strokeStyle = 'rgba(91,141,238,0.40)'; ctx.lineWidth = 1.2; ctx.stroke();
-
-    // Subtle cross-hatch (latitude lines)
-    ctx.strokeStyle = 'rgba(91,141,238,0.13)'; ctx.lineWidth = 0.8;
-    for (let ly = -0.6; ly <= 0.6; ly += 0.3) {
-      const yr = ly * R;
-      const xr = Math.sqrt(Math.max(0, R*R - yr*yr));
-      ctx.beginPath(); ctx.moveTo(-xr, yr); ctx.lineTo(xr, yr); ctx.stroke();
-    }
-
-    ctx.restore(); // end brain scale
-
-    // ── Eigenvector arrow (rotates in world space, not squished with brain) ──
-    const arrowLen = R * 1.55;
-    const ax = Math.cos(vecAngle) * arrowLen;
-    const ay = Math.sin(vecAngle) * arrowLen;
-    const angle = Math.atan2(ay, ax);
-    const headLen = Math.max(10, R * 0.14);
-    const headA = Math.PI / 6;
-
-    // Arrow shaft glow
-    ctx.shadowColor = 'rgba(224,184,74,0.6)';
-    ctx.shadowBlur = 8;
-    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(ax, ay);
-    ctx.strokeStyle = 'rgba(224,184,74,0.90)'; ctx.lineWidth = 2.2; ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // Arrowhead
-    ctx.beginPath();
-    ctx.moveTo(ax, ay);
-    ctx.lineTo(ax - headLen * Math.cos(angle - headA), ay - headLen * Math.sin(angle - headA));
-    ctx.lineTo(ax - headLen * Math.cos(angle + headA), ay - headLen * Math.sin(angle + headA));
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(224,184,74,0.92)'; ctx.fill();
-
-    // "λv" label near tip
-    const ff = fontReady ? "'JetBrains Mono'," : '';
-    ctx.font = `bold ${Math.max(12, R * 0.18)}px ${ff}monospace`;
-    ctx.fillStyle = 'rgba(224,184,74,0.88)';
-    ctx.globalAlpha = 0.88;
-    ctx.fillText('λv', ax + Math.cos(angle) * 14, ay + Math.sin(angle) * 14 + 5);
-    ctx.globalAlpha = 1;
-
-    ctx.restore();
-  }
-
-  /* ── Main loop ── */
+  /* ── Main draw ── */
   function draw(ts) {
-    if (!t0) t0 = ts;
-    const dt = ts - t0;
+    if (!t0) { t0 = ts; stateStart = ts; pickNewTarget(); }
+    const dt      = ts - t0;
+    const elapsed = ts - stateStart;
 
-    ctx.fillStyle = '#03040c';
-    ctx.fillRect(0, 0, W, H);
+    // State transitions
+    if      (state === S.HOLD   && elapsed > holdDur)   { state = S.DRIFT;  stateStart = ts; pickNewTarget(); }
+    else if (state === S.DRIFT  && elapsed > driftDur)  { state = S.SETTLE; stateStart = ts; originAngle = originTo; vecAngle = vecTo; }
+    else if (state === S.SETTLE && elapsed > settleDur) { state = S.HOLD;   stateStart = ts; }
 
+    // Compute display angles
+    let dispOrigin, dispVec;
+    if (state === S.DRIFT) {
+      const p   = easeInOut(Math.min(elapsed / driftDur, 1));
+      dispOrigin = lerpAngle(originFrom, originTo, p);
+      dispVec    = lerpAngle(vecFrom,    vecTo,    p);
+      glowAlpha  = 0.55 + 0.45*(1 - Math.abs(p - 0.5)*2);
+    } else if (state === S.SETTLE) {
+      dispOrigin = originAngle;
+      const p    = Math.min(elapsed / settleDur, 1);
+      const damp = Math.exp(-p * 4.0);
+      dispVec    = vecAngle + damp * Math.cos(p * 15) * (Math.PI * 0.09);
+      glowAlpha  = 0.65 + 0.35*(1 - damp);
+    } else {
+      dispOrigin = originAngle;
+      dispVec    = vecAngle;
+      glowAlpha  = 0.88 + 0.12*Math.sin(dt * 0.0017);
+    }
+
+    ctx.clearRect(0, 0, W, H);
     drawStars(dt);
 
-    const cx = W * 0.56;
-    const cy = H * 0.52;
-    const R  = Math.min(W, H) * 0.20;
+    const b   = getBrain();
+    const ox  = b.cx + b.rx * Math.cos(dispOrigin);
+    const oy  = b.cy + b.ry * Math.sin(dispOrigin);
+    const len = (b.rx + b.ry) * 0.80;
 
-    drawBrain(dt, cx, cy, R);
+    drawSaber(ox, oy, dispVec, len, glowAlpha);
   }
 
   function loop(ts) { draw(ts); requestAnimationFrame(loop); }
   window.addEventListener('resize', () => { resize(); initStars(); });
-  requestAnimationFrame(() => { init(); requestAnimationFrame(loop); });
+  requestAnimationFrame(() => { resize(); initStars(); requestAnimationFrame(loop); });
 })();
 
 /* ── WAITLIST COUNTER — live from API ── */
