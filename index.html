@@ -314,19 +314,11 @@
   <canvas id="hero-canvas"></canvas>
   <div class="hero-content">
     <div class="badge"><span class="badge-dot"></span> Private Beta — Now Accepting Applications</div>
-    <h1>Your mind has an <em>eigenvalue</em>.<br/>We built an agent to find it.</h1>
-    <p class="hero-sub">
-      In mathematics, an eigenvector transforms but never loses direction — it only scales.
-      MindEigen deploys an AI agent that finds your cognitive signature, then amplifies it —
-      recursively, autonomously, in the cloud.
-    </p>
-    <div class="hero-equation">A·mind = λ·mind &nbsp;→&nbsp; find λ, amplify it. ∞</div>
+    <h1>Your mind has an <em>eigenvalue</em>.</h1>
+    <p class="hero-sub">Find λ.&nbsp; Amplify it.&nbsp; ∞</p>
     <div class="hero-actions">
       <button class="btn-primary" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">
         Request early access →
-      </button>
-      <button class="btn-secondary" onclick="document.getElementById('what').scrollIntoView({behavior:'smooth'})">
-        See how it works
       </button>
     </div>
   </div>
@@ -530,120 +522,186 @@
 </footer>
 
 <script>
-/* ── HERO CANVAS: 3D depth field with math symbols + perspective ── */
+/* ── HERO CANVAS: Black hole + starfield + orbiting math symbols ── */
 (function() {
   const canvas = document.getElementById('hero-canvas');
   const ctx    = canvas.getContext('2d');
-  const SYMS   = ['λ','∑','∇','∞','∂','σ','μ','φ','Δ','∏','⊗','∈','ℝ','Av=λv','det(A)','∇²'];
-  const LAYERS = [
-    { z: 0.2, speed: 0.12, alpha: 0.06, color: '#5b8dee' },
-    { z: 0.5, speed: 0.25, alpha: 0.13, color: '#a78bfa' },
-    { z: 0.8, speed: 0.45, alpha: 0.22, color: '#e0b84a' },
-    { z: 1.0, speed: 0.60, alpha: 0.30, color: '#5b8dee' },
+
+  const SYMS = [
+    'α','β','γ','δ','ε','λ','μ','σ','ν','φ','ψ','ω','Γ','Δ','Σ','Ω','Ψ','Φ','Θ','Ξ','Π',
+    '∀','∃','¬','→','↔','⊢','⊨','∈','ℝ','ℕ','∇','∂','∞',
+    'Av=λv','det(A)','‖v‖=1',
+    'G↔¬Bew(G)','¬Bew(G)','TNT⊬G','∀x(x+0=x)','MU?','Bew(n)','G:¬Prov(⌈G⌉)',
   ];
-  let W, H, particles, t0 = null;
+
+  let W, H, stars, orbiters, t0 = null;
 
   function resize() {
     W = canvas.width  = canvas.offsetWidth  || window.innerWidth;
     H = canvas.height = canvas.offsetHeight || window.innerHeight;
   }
 
-  function mkParticle(layer) {
-    const angle = Math.random() * Math.PI * 2;
-    const dist  = 0.3 + Math.random() * 0.7; // normalized radius
-    return {
-      // 3D position in [-1,1] space
-      rx: (Math.random() - .5) * 2,
-      ry: (Math.random() - .5) * 2,
-      rz: layer.z + (Math.random() - .5) * 0.15,
-      vx: (Math.random() - .5) * layer.speed * 0.001,
-      vy: (Math.random() - .5) * layer.speed * 0.001,
-      sym: SYMS[Math.floor(Math.random() * SYMS.length)],
-      alpha: layer.alpha * (0.7 + Math.random() * 0.6),
-      color: layer.color,
-      phase: Math.random() * Math.PI * 2,
-      wob: 0.0003 + Math.random() * 0.0004,
-    };
-  }
-
-  function project(p, t) {
-    // slow global rotation around y-axis
-    const rotY = t * 0.00008;
-    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
-    const x3 = p.rx * cosY - p.rz * sinY;
-    const z3 = p.rx * sinY + p.rz * cosY;
-    // perspective divide
-    const fov = 1.8;
-    const scale = fov / (fov + z3 + 1);
-    return {
-      sx: W/2 + x3 * scale * W * 0.55,
-      sy: H/2 + p.ry * scale * H * 0.55,
-      scale,
-      depth: z3,
-    };
-  }
-
-  function init() {
-    resize();
-    particles = [];
-    const total = Math.max(30, Math.min(70, Math.floor(W * H / 14000)));
-    for (const layer of LAYERS) {
-      const n = Math.round(total * (layer.z * 0.4 + 0.15));
-      for (let i = 0; i < n; i++) particles.push(mkParticle(layer));
+  /* ── Stars ── */
+  function initStars() {
+    stars = [];
+    const N = Math.min(280, Math.floor(W * H / 4500));
+    for (let i = 0; i < N; i++) {
+      stars.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: 0.25 + Math.random() * 1.4,
+        alpha: 0.15 + Math.random() * 0.85,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.0004 + Math.random() * 0.0018,
+      });
     }
-    // sort by depth (back to front)
-    particles.sort((a, b) => a.rz - b.rz);
   }
 
-  function draw(t) {
-    if (!t0) t0 = t;
-    const dt = t - t0;
-    ctx.clearRect(0, 0, W, H);
-
-    // draw connections between nearby projected particles
-    const projected = particles.map(p => ({ p, ...project(p, dt) }));
-    for (let i = 0; i < projected.length; i++) {
-      for (let j = i + 1; j < projected.length; j++) {
-        const a = projected[i], b = projected[j];
-        const dx = a.sx - b.sx, dy = a.sy - b.sy;
-        const d2 = dx*dx + dy*dy;
-        if (d2 < 18000) {
-          const proximity = 1 - Math.sqrt(d2) / 134;
-          const depthFade = Math.min(a.scale, b.scale) * 0.5;
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(91,141,238,${proximity * depthFade * 0.12})`;
-          ctx.lineWidth = proximity * 0.8;
-          ctx.moveTo(a.sx, a.sy);
-          ctx.lineTo(b.sx, b.sy);
-          ctx.stroke();
-        }
-      }
+  /* ── Orbiting symbols ── */
+  function initOrbiters() {
+    orbiters = [];
+    const N = 24;
+    for (let i = 0; i < N; i++) {
+      const angle = (i / N) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+      orbiters.push({
+        angle,
+        dist: 1.65 + Math.random() * 1.55,            // orbit radius as ×BH radius
+        speed: (0.00007 + Math.random() * 0.00011) * (Math.random() < 0.75 ? 1 : -1),
+        sym: SYMS[Math.floor(Math.random() * SYMS.length)],
+        phase: Math.random() * Math.PI * 2,
+      });
     }
+  }
 
-    // draw symbols
-    for (const { p, sx, sy, scale, depth } of projected) {
-      const breathe = 1 + Math.sin(dt * p.wob + p.phase) * 0.12;
-      const fontSize = Math.max(7, Math.round(scale * 22 * breathe));
+  function init() { resize(); initStars(); initOrbiters(); }
+
+  /* ── Draw stars ── */
+  function drawStars(dt) {
+    for (const s of stars) {
+      const tw = 0.55 + 0.45 * Math.sin(dt * s.speed + s.phase);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(190,210,255,${s.alpha * tw})`;
+      ctx.fill();
+    }
+  }
+
+  /* ── Draw black hole ── */
+  function drawBH(dt, cx, cy, R) {
+    const SQUISH = 0.17;          // nearly edge-on disk (Gargantua-style)
+    const INNER  = R * 1.28;      // ISCO / inner disk edge
+    const OUTER  = R * 3.50;      // outer disk edge
+    const rot    = dt * 0.000038; // slow clockwise rotation
+
+    // 1. Outer gravitational-lensing haze
+    const glow = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * 5.5);
+    glow.addColorStop(0,    'rgba(255,140,25,0.22)');
+    glow.addColorStop(0.3,  'rgba(255,90,12,0.10)');
+    glow.addColorStop(0.65, 'rgba(120,35,5,0.04)');
+    glow.addColorStop(1,    'rgba(0,0,0,0)');
+    ctx.beginPath(); ctx.arc(cx, cy, R * 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = glow; ctx.fill();
+
+    // 2. Back half of accretion disk (behind event horizon)
+    ctx.save();
+    ctx.translate(cx, cy); ctx.rotate(rot); ctx.scale(1, SQUISH);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(-OUTER * 1.1, 0, OUTER * 2.2, OUTER); ctx.clip(); // y>0 = back
+    // Radial + Doppler gradient
+    const rb = ctx.createRadialGradient(0, 0, INNER, 0, 0, OUTER);
+    rb.addColorStop(0,   'rgba(255,230,140,0.80)');
+    rb.addColorStop(0.25,'rgba(255,160,35,0.60)');
+    rb.addColorStop(0.60,'rgba(180,65,8,0.32)');
+    rb.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.beginPath(); ctx.arc(0, 0, OUTER, 0, Math.PI * 2); ctx.arc(0, 0, INNER, 0, Math.PI * 2, true);
+    ctx.fillStyle = rb; ctx.fill('evenodd');
+    ctx.restore(); ctx.restore();
+
+    // 3. Event horizon — solid black
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fillStyle = '#000000'; ctx.fill();
+
+    // 4. Photon ring — thin bright halo just outside horizon
+    const pr = ctx.createRadialGradient(cx, cy, R * 0.84, cx, cy, R * 1.18);
+    pr.addColorStop(0,    'rgba(255,215,110,0)');
+    pr.addColorStop(0.42, 'rgba(255,235,150,0.72)');
+    pr.addColorStop(0.62, 'rgba(255,200,80,0.38)');
+    pr.addColorStop(1,    'rgba(180,110,15,0)');
+    ctx.beginPath(); ctx.arc(cx, cy, R * 1.18, 0, Math.PI * 2);
+    ctx.fillStyle = pr; ctx.fill();
+
+    // Re-punch horizon so photon ring only shows at edge
+    ctx.beginPath(); ctx.arc(cx, cy, R * 0.96, 0, Math.PI * 2);
+    ctx.fillStyle = '#000000'; ctx.fill();
+
+    // 5. Front half of accretion disk (in front of event horizon) — brighter (Doppler)
+    ctx.save();
+    ctx.translate(cx, cy); ctx.rotate(rot); ctx.scale(1, SQUISH);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(-OUTER * 1.1, -OUTER, OUTER * 2.2, OUTER); ctx.clip(); // y<0 = front
+    const rf = ctx.createRadialGradient(0, 0, INNER, 0, 0, OUTER);
+    rf.addColorStop(0,    'rgba(255,248,200,1.0)');
+    rf.addColorStop(0.18, 'rgba(255,190,60,0.88)');
+    rf.addColorStop(0.50, 'rgba(230,100,12,0.52)');
+    rf.addColorStop(0.78, 'rgba(130,45,5,0.22)');
+    rf.addColorStop(1,    'rgba(0,0,0,0)');
+    ctx.beginPath(); ctx.arc(0, 0, OUTER, 0, Math.PI * 2); ctx.arc(0, 0, INNER, 0, Math.PI * 2, true);
+    ctx.fillStyle = rf; ctx.fill('evenodd');
+    ctx.restore(); ctx.restore();
+  }
+
+  /* ── Draw orbiting symbols ── */
+  function drawOrbiters(dt, cx, cy, R, frontPass) {
+    const TILT = 0.26; // orbit inclination (squish factor)
+    for (const o of orbiters) {
+      o.angle += o.speed * 16;
+      const sA = o.dist * R;
+      const sB = sA * TILT;
+      const ox = cx + sA * Math.cos(o.angle);
+      const oy = cy + sB * Math.sin(o.angle);
+
+      // sin > 0 → behind disk plane; sin < 0 → in front
+      const isBehind = Math.sin(o.angle) > 0;
+      if (frontPass ? isBehind : !isBehind) continue; // two-pass depth sort
+
+      // Occlude by event horizon
+      const dist2 = (ox - cx) ** 2 + (oy - cy) ** 2;
+      if (dist2 < (R * 0.92) ** 2) continue;
+
+      const depth = 0.55 + 0.45 * Math.abs(Math.cos(o.angle));
+      const isLong = o.sym.length > 4;
+      const fontSize = Math.max(13, Math.round(depth * (isLong ? 15 : 24)));
+      const alpha = isBehind ? depth * 0.28 : depth * 0.80;
+      const color = isBehind ? '#5b8dee' : (o.angle % (Math.PI * 2) < Math.PI ? '#e0b84a' : '#a78bfa');
+
       ctx.font = `${fontSize}px 'JetBrains Mono',monospace`;
-      ctx.globalAlpha = p.alpha * scale * 1.4;
-      ctx.fillStyle = p.color;
-      ctx.fillText(p.sym, sx, sy);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.fillText(o.sym, ox - fontSize * 0.3, oy);
       ctx.globalAlpha = 1;
-
-      // gentle drift
-      p.rx += p.vx + Math.sin(dt * 0.0002 + p.phase) * 0.00015;
-      p.ry += p.vy + Math.cos(dt * 0.0002 + p.phase) * 0.00015;
-      // wrap
-      if (p.rx > 1.4) p.rx = -1.4;
-      if (p.rx < -1.4) p.rx = 1.4;
-      if (p.ry > 1.4) p.ry = -1.4;
-      if (p.ry < -1.4) p.ry = 1.4;
     }
   }
 
-  function loop(t) { draw(t); requestAnimationFrame(loop); }
+  /* ── Main loop ── */
+  function draw(ts) {
+    if (!t0) t0 = ts;
+    const dt = ts - t0;
 
-  window.addEventListener('resize', () => { resize(); init(); });
+    ctx.fillStyle = '#03040c';
+    ctx.fillRect(0, 0, W, H);
+
+    drawStars(dt);
+
+    const cx = W * 0.50;
+    const cy = H * 0.54;
+    const R  = Math.min(W, H) * 0.175;
+
+    drawOrbiters(dt, cx, cy, R, false); // behind-BH pass
+    drawBH(dt, cx, cy, R);
+    drawOrbiters(dt, cx, cy, R, true);  // in-front-of-BH pass
+  }
+
+  function loop(ts) { draw(ts); requestAnimationFrame(loop); }
+  window.addEventListener('resize', () => { resize(); initStars(); initOrbiters(); });
   init();
   requestAnimationFrame(loop);
 })();
