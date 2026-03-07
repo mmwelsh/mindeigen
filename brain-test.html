@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MindEigen — Brain Render Candidates</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#07080f;color:#e8eaf2;font-family:'Helvetica Neue',Arial,sans-serif;padding:40px 32px;min-height:100vh}
+  h1{font-family:monospace;font-size:1.5rem;color:#5b8dee;margin-bottom:6px}
+  .sub{color:#6b7280;font-size:.9rem;margin-bottom:36px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;max-width:780px}
+  @media(max-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+  .card{background:#0d1020;border:1px solid #1e2235;border-radius:14px;padding:24px 20px;text-align:center;cursor:default;transition:border-color .2s}
+  .card:hover{border-color:#5b8dee}
+  canvas{display:block;margin:0 auto}
+  .card h3{margin:14px 0 4px;color:#e8eaf2;font-size:.95rem;font-weight:600}
+  .card p{color:#6b7280;font-size:.78rem;line-height:1.5}
+  .num{display:inline-block;background:rgba(91,141,238,.15);color:#5b8dee;font-size:.7rem;font-family:monospace;padding:2px 7px;border-radius:4px;margin-bottom:10px}
+</style>
+</head>
+<body>
+<h1>🧠 Brain Render Candidates</h1>
+<p class="sub">Each rotates slowly. Reply to Smurf with the number(s) you like — or mix elements from multiple.</p>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="num">01</div>
+    <canvas id="b1" width="180" height="180"></canvas>
+    <h3>Pinky &amp; the Brain</h3>
+    <p>Classic cartoon pink-grey, gyri folds, soft outline</p>
+  </div>
+
+  <div class="card">
+    <div class="num">02</div>
+    <canvas id="b2" width="180" height="180"></canvas>
+    <h3>Dark Eigen</h3>
+    <p>Site palette — dark indigo, blue fold lines, rim glow</p>
+  </div>
+
+  <div class="card">
+    <div class="num">03</div>
+    <canvas id="b3" width="180" height="180"></canvas>
+    <h3>Neural Glow</h3>
+    <p>Black sphere, teal cortical folds with bloom effect</p>
+  </div>
+
+  <div class="card">
+    <div class="num">04</div>
+    <canvas id="b4" width="180" height="180"></canvas>
+    <h3>Minimal Icon</h3>
+    <p>Silver-grey, 3 clean folds, crisp midline — icon-scale ready</p>
+  </div>
+
+  <div class="card">
+    <div class="num">05</div>
+    <canvas id="b5" width="180" height="180"></canvas>
+    <h3>Dual Hemisphere</h3>
+    <p>Two-lobe anatomy, visible midline groove, purple tones</p>
+  </div>
+
+  <div class="card">
+    <div class="num">06</div>
+    <canvas id="b6" width="180" height="180"></canvas>
+    <h3>Emoji Faithful</h3>
+    <p>Warm coral/pink, worm-like gyri, close to 🧠 emoji style</p>
+  </div>
+
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────
+   SHARED HELPERS
+───────────────────────────────────────────────────────── */
+function clipCircle(ctx, cx, cy, r) {
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.clip();
+}
+
+/* Project a longitude on a rotating sphere to screen-x.
+   Returns {x, cosA} — cosA < 0 means on back face. */
+function project(cx, R, phi, rotY) {
+  const a = phi + rotY;
+  return { x: cx + R * Math.sin(a), cosA: Math.cos(a) };
+}
+
+/* Draw a meridional fold line (runs top→bottom along a longitude) */
+function drawFold(ctx, cx, cy, R, phi, rotY, opts) {
+  const {x, cosA} = project(cx, R, phi, rotY);
+  if (cosA < 0) return;
+  const {color, width, yScale, curve} = opts;
+  const ys = yScale || 0.48;
+  const cv = (curve || 0.22) * cosA;
+  ctx.beginPath();
+  ctx.moveTo(x, cy - R*ys);
+  ctx.quadraticCurveTo(x + R*cv, cy, x, cy + R*ys);
+  ctx.strokeStyle = typeof color === 'function' ? color(cosA) : color;
+  ctx.lineWidth = width || 1.8;
+  ctx.stroke();
+}
+
+/* Draw a latitudinal arc (runs left→right at a given y-level) */
+function drawLatArc(ctx, cx, cy, R, yFrac, rotY, opts) {
+  const cosY = Math.cos(rotY * 0.5 + yFrac);
+  const y = cy + R * yFrac;
+  const curve = (opts.curve || 0.12) * cosY;
+  ctx.beginPath();
+  ctx.moveTo(cx - R*(opts.span||0.75), y);
+  ctx.quadraticCurveTo(cx, y + R*curve, cx + R*(opts.span||0.75), y);
+  ctx.strokeStyle = opts.color || 'rgba(200,150,150,0.3)';
+  ctx.lineWidth = opts.width || 1.5;
+  ctx.stroke();
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANT 1 — Pinky & the Brain
+───────────────────────────────────────────────────────── */
+function drawPinky(ctx, W, H, t) {
+  const cx=W/2, cy=H/2, R=W*0.39, rot=t*0.00035;
+  ctx.clearRect(0,0,W,H);
+
+  // Base fill
+  const bg = ctx.createRadialGradient(cx-R*.3,cy-R*.3,R*.05, cx,cy,R);
+  bg.addColorStop(0, '#eab8c8');
+  bg.addColorStop(0.55,'#cc8090');
+  bg.addColorStop(1,   '#8a3044');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle=bg; ctx.fill();
+
+  // Folds
+  ctx.save(); clipCircle(ctx, cx, cy, R*.98);
+  const foldPhis = [0.15, 0.75, 1.35, 1.95, 2.55, 3.15, 3.75];
+  const foldYOff = [-.10,  .15, -.05,  .20, -.15,  .08, -.12];
+  for (let i=0; i<foldPhis.length; i++) {
+    const {x, cosA} = project(cx, R, foldPhis[i], rot);
+    if (cosA < 0) continue;
+    const yc = cy + R*foldYOff[i];
+    const cv = (i%2===0? .18 : -.18) * cosA;
+    ctx.beginPath();
+    ctx.moveTo(x, yc-R*.4);
+    ctx.quadraticCurveTo(x+R*cv, yc, x, yc+R*.4);
+    ctx.strokeStyle = `rgba(100,30,48,${cosA*.65})`;
+    ctx.lineWidth = 2.2; ctx.stroke();
+  }
+  // Horizontal gyri arcs
+  drawLatArc(ctx,cx,cy,R,-.22,rot,{color:'rgba(100,30,48,.30)',width:1.8,span:.62,curve:.14});
+  drawLatArc(ctx,cx,cy,R, .18,rot,{color:'rgba(100,30,48,.25)',width:1.8,span:.60,curve:-.12});
+  // Midline
+  const mx = cx + R*.04*Math.sin(rot);
+  ctx.beginPath(); ctx.moveTo(mx,cy-R); ctx.lineTo(mx,cy+R);
+  ctx.strokeStyle='rgba(90,25,40,.5)'; ctx.lineWidth=3; ctx.stroke();
+  ctx.restore();
+
+  // Specular highlight
+  const hl = ctx.createRadialGradient(cx-R*.32,cy-R*.32,0, cx-R*.32,cy-R*.32,R*.52);
+  hl.addColorStop(0,'rgba(255,255,255,.32)');
+  hl.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle=hl; ctx.fill();
+
+  // Outline
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(80,20,35,.8)'; ctx.lineWidth=2; ctx.stroke();
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANT 2 — Dark Eigen
+───────────────────────────────────────────────────────── */
+function drawDarkEigen(ctx, W, H, t) {
+  const cx=W/2, cy=H/2, R=W*0.39, rot=t*0.00035;
+  ctx.clearRect(0,0,W,H);
+
+  // Outer glow
+  const og = ctx.createRadialGradient(cx,cy,R*.5, cx,cy,R*2.0);
+  og.addColorStop(0,'rgba(91,141,238,.18)');
+  og.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,R*2,0,Math.PI*2);
+  ctx.fillStyle=og; ctx.fill();
+
+  // Sphere
+  const bg = ctx.createRadialGradient(cx-R*.28,cy-R*.28,0, cx,cy,R);
+  bg.addColorStop(0,'#1c2a58');
+  bg.addColorStop(.6,'#0a1026');
+  bg.addColorStop(1,'#04070f');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle=bg; ctx.fill();
+
+  // Rim light
+  const rim = ctx.createRadialGradient(cx,cy,R*.72, cx,cy,R*1.04);
+  rim.addColorStop(0,'rgba(91,141,238,0)');
+  rim.addColorStop(.85,'rgba(91,141,238,.06)');
+  rim.addColorStop(1,'rgba(91,141,238,.22)');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle=rim; ctx.fill();
+
+  // Folds
+  ctx.save(); clipCircle(ctx,cx,cy,R*.98);
+  const phis = [0.0,.65,1.3,1.95,2.6,3.25,3.9,4.55];
+  for (let i=0; i<phis.length; i++) {
+    drawFold(ctx,cx,cy,R, phis[i], rot, {
+      color: a => `rgba(91,141,238,${a*.55})`,
+      width: 1.6,
+      curve: i%2===0 ? .22 : -.22,
+      yScale: .46
+    });
+  }
+  drawLatArc(ctx,cx,cy,R,-.20,rot,{color:'rgba(91,141,238,.20)',width:1.4,curve:.15,span:.68});
+  drawLatArc(ctx,cx,cy,R, .18,rot,{color:'rgba(91,141,238,.18)',width:1.4,curve:-.13,span:.65});
+  ctx.restore();
+
+  // Specular
+  const hl = ctx.createRadialGradient(cx-R*.3,cy-R*.3,0, cx-R*.3,cy-R*.3,R*.5);
+  hl.addColorStop(0,'rgba(140,180,255,.20)');
+  hl.addColorStop(1,'rgba(140,180,255,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=hl; ctx.fill();
+
+  // Outline
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(91,141,238,.45)'; ctx.lineWidth=1.5; ctx.stroke();
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANT 3 — Neural Glow
+───────────────────────────────────────────────────────── */
+function drawNeuralGlow(ctx, W, H, t) {
+  const cx=W/2, cy=H/2, R=W*0.39, rot=t*0.00035;
+  ctx.clearRect(0,0,W,H);
+
+  // Outer bloom
+  const bloom = ctx.createRadialGradient(cx,cy,R*.55, cx,cy,R*1.9);
+  bloom.addColorStop(0,'rgba(0,210,190,.12)');
+  bloom.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,R*1.9,0,Math.PI*2);
+  ctx.fillStyle=bloom; ctx.fill();
+
+  // Dark sphere
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle='#060810'; ctx.fill();
+
+  // Meridional folds
+  ctx.save(); clipCircle(ctx,cx,cy,R*.98);
+  ctx.shadowColor='rgba(0,220,200,.9)'; ctx.shadowBlur=7;
+  const phis=[0.0,.6,1.2,1.8,2.4,3.0,3.6,4.2];
+  for (let i=0; i<phis.length; i++) {
+    drawFold(ctx,cx,cy,R, phis[i], rot, {
+      color: a=>`rgba(0,220,200,${a*.7})`,
+      width:1.3,
+      curve: i%2===0?.25:-.25,
+      yScale:.46
+    });
+  }
+  // Horizontal arcs
+  ctx.shadowBlur=5;
+  drawLatArc(ctx,cx,cy,R,-.25,rot,{color:'rgba(0,200,180,.45)',width:1.3,span:.66,curve:.18});
+  drawLatArc(ctx,cx,cy,R, .20,rot,{color:'rgba(0,200,180,.40)',width:1.3,span:.64,curve:-.15});
+  // A couple diagonal connections
+  for (let i=0; i<4; i++) {
+    const phi = i*1.4 + rot*1.3;
+    const {x,cosA} = project(cx, R, phi, rot);
+    if (cosA<0) continue;
+    const x2 = cx+R*Math.sin(phi+1.4+rot);
+    const y1 = cy-R*.2, y2 = cy+R*.2;
+    ctx.beginPath();
+    ctx.moveTo(x, y1);
+    ctx.quadraticCurveTo(cx, cy, x2, y2);
+    ctx.strokeStyle=`rgba(0,180,160,${cosA*.3})`;
+    ctx.lineWidth=.9; ctx.stroke();
+  }
+  ctx.shadowBlur=0;
+  ctx.restore();
+
+  // Outline
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(0,180,160,.35)'; ctx.lineWidth=1.5; ctx.stroke();
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANT 4 — Minimal Icon
+───────────────────────────────────────────────────────── */
+function drawMinimal(ctx, W, H, t) {
+  const cx=W/2, cy=H/2, R=W*0.38, rot=t*0.00030;
+  ctx.clearRect(0,0,W,H);
+
+  // Slight vertical squash for brain-like oval
+  ctx.save();
+  ctx.translate(cx,cy); ctx.scale(1,.93); ctx.translate(-cx,-cy);
+
+  const bg = ctx.createRadialGradient(cx-R*.25,cy-R*.25,0, cx,cy,R);
+  bg.addColorStop(0,'#bec8e0');
+  bg.addColorStop(.55,'#8490b0');
+  bg.addColorStop(1,'#404868');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle=bg; ctx.fill();
+  ctx.strokeStyle='#2e3450'; ctx.lineWidth=2.2; ctx.stroke();
+  ctx.restore();
+
+  // 3 clean folds
+  ctx.save(); clipCircle(ctx,cx,cy,R*.96);
+  const phis3=[.5, 1.7, 2.9];
+  for (let i=0; i<phis3.length; i++) {
+    drawFold(ctx,cx,cy,R, phis3[i], rot, {
+      color: a=>`rgba(38,44,72,${a*.55})`,
+      width:2.4, curve:i%2===0?.15:-.15, yScale:.5
+    });
+  }
+  // Midline groove
+  const mx = cx + R*.05*Math.sin(rot);
+  ctx.beginPath(); ctx.moveTo(mx,cy-R); ctx.lineTo(mx,cy+R);
+  ctx.strokeStyle='rgba(30,36,62,.5)'; ctx.lineWidth=3.5; ctx.stroke();
+  ctx.restore();
+
+  // Highlight
+  const hl = ctx.createRadialGradient(cx-R*.3,cy-R*.3,0, cx-R*.3,cy-R*.3,R*.5);
+  hl.addColorStop(0,'rgba(255,255,255,.28)');
+  hl.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=hl; ctx.fill();
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANT 5 — Dual Hemisphere
+───────────────────────────────────────────────────────── */
+function drawDual(ctx, W, H, t) {
+  const cx=W/2, cy=H/2, R=W*0.39, rot=t*0.00035;
+  ctx.clearRect(0,0,W,H);
+
+  // Outer glow
+  const og = ctx.createRadialGradient(cx,cy,R*.5, cx,cy,R*1.9);
+  og.addColorStop(0,'rgba(130,90,210,.14)');
+  og.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,R*1.9,0,Math.PI*2); ctx.fillStyle=og; ctx.fill();
+
+  // Full sphere base
+  const bg = ctx.createRadialGradient(cx-R*.28,cy-R*.3,0, cx,cy,R);
+  bg.addColorStop(0,'#2a1e52');
+  bg.addColorStop(.65,'#100c22');
+  bg.addColorStop(1,'#050310');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=bg; ctx.fill();
+
+  ctx.save(); clipCircle(ctx,cx,cy,R*.98);
+
+  // Left hemisphere folds
+  for (let i=0; i<4; i++) {
+    const phi = i*.72 + rot;
+    const {x,cosA} = project(cx-R*.06, R*.85, phi-0.2, rot);
+    if (cosA<0 || x>cx+2) continue;
+    ctx.beginPath();
+    ctx.moveTo(x, cy-R*.45); ctx.quadraticCurveTo(x+cosA*R*(i%2?.18:-.18), cy, x, cy+R*.45);
+    ctx.strokeStyle=`rgba(160,120,240,${cosA*.5})`; ctx.lineWidth=1.6; ctx.stroke();
+  }
+  // Right hemisphere folds
+  for (let i=0; i<4; i++) {
+    const phi = i*.72+0.36 + rot;
+    const {x,cosA} = project(cx+R*.06, R*.85, phi+0.2, rot);
+    if (cosA<0 || x<cx-2) continue;
+    ctx.beginPath();
+    ctx.moveTo(x, cy-R*.45); ctx.quadraticCurveTo(x+cosA*R*(i%2?-.18:.18), cy, x, cy+R*.45);
+    ctx.strokeStyle=`rgba(120,90,200,${cosA*.5})`; ctx.lineWidth=1.6; ctx.stroke();
+  }
+  // Latitudinal arcs
+  drawLatArc(ctx,cx,cy,R,-.24,rot,{color:'rgba(150,110,230,.22)',width:1.4,span:.64,curve:.13});
+  drawLatArc(ctx,cx,cy,R, .20,rot,{color:'rgba(150,110,230,.20)',width:1.4,span:.62,curve:-.11});
+
+  // Deep midline groove
+  ctx.beginPath(); ctx.moveTo(cx,cy-R); ctx.lineTo(cx,cy+R);
+  ctx.strokeStyle='rgba(0,0,0,.7)'; ctx.lineWidth=5; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-R); ctx.lineTo(cx,cy+R);
+  ctx.strokeStyle='rgba(80,50,150,.3)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // Cerebellum
+  const cg = ctx.createRadialGradient(cx,cy+R*.7,0, cx,cy+R*.7,R*.42);
+  cg.addColorStop(0,'rgba(50,35,80,.95)');
+  cg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath(); ctx.arc(cx,cy+R*.76,R*.38,0,Math.PI*2);
+  ctx.fillStyle=cg; ctx.fill();
+  ctx.restore();
+
+  // Rim + outline
+  const rim = ctx.createRadialGradient(cx,cy,R*.74, cx,cy,R*1.03);
+  rim.addColorStop(0,'rgba(130,90,210,0)');
+  rim.addColorStop(1,'rgba(130,90,210,.24)');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=rim; ctx.fill();
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(130,90,210,.4)'; ctx.lineWidth=1.5; ctx.stroke();
+
+  // Specular
+  const hl=ctx.createRadialGradient(cx-R*.32,cy-R*.3,0,cx-R*.32,cy-R*.3,R*.5);
+  hl.addColorStop(0,'rgba(180,150,255,.18)');
+  hl.addColorStop(1,'rgba(180,150,255,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=hl; ctx.fill();
+}
+
+/* ─────────────────────────────────────────────────────────
+   VARIANT 6 — Emoji Faithful
+───────────────────────────────────────────────────────── */
+function drawEmoji(ctx, W, H, t) {
+  const cx=W/2, cy=H/2, R=W*0.38, rot=t*0.00030;
+  ctx.clearRect(0,0,W,H);
+
+  // Warm base
+  const bg = ctx.createRadialGradient(cx-R*.3,cy-R*.28,R*.05, cx+R*.05,cy,R);
+  bg.addColorStop(0,'#f0a890');
+  bg.addColorStop(.45,'#d4706a');
+  bg.addColorStop(1,'#8a2e2e');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.fillStyle=bg; ctx.fill();
+
+  ctx.save(); clipCircle(ctx,cx,cy,R*.97);
+
+  // Thick worm-like gyri — characteristic of emoji brain
+  const gyri = [
+    {phi:.10,  y:-.35, curve:.20, w:3.0},
+    {phi:.65,  y:-.12, curve:-.22, w:3.2},
+    {phi:1.20, y: .10, curve:.20,  w:3.0},
+    {phi:1.75, y: .28, curve:-.18, w:2.8},
+    {phi:2.30, y:-.20, curve:.22,  w:3.0},
+    {phi:2.85, y: .05, curve:-.20, w:2.8},
+    {phi:3.40, y:-.30, curve:.18,  w:3.0},
+    {phi:3.95, y: .15, curve:-.20, w:3.0},
+  ];
+  for (const g of gyri) {
+    const {x,cosA} = project(cx, R, g.phi, rot);
+    if (cosA<0) continue;
+    const yc = cy + R*g.y;
+    ctx.beginPath();
+    ctx.moveTo(x, yc-R*.38);
+    ctx.quadraticCurveTo(x+R*g.curve*cosA, yc, x, yc+R*.38);
+    ctx.strokeStyle=`rgba(75,20,20,${cosA*.6})`;
+    ctx.lineWidth=g.w*cosA; ctx.stroke();
+  }
+  // Horizontal fissures
+  drawLatArc(ctx,cx,cy,R,-.28,rot,{color:'rgba(75,20,20,.30)',width:2.5,span:.60,curve:.18});
+  drawLatArc(ctx,cx,cy,R, .22,rot,{color:'rgba(75,20,20,.28)',width:2.5,span:.58,curve:-.15});
+  // Midline
+  const mx = cx+R*.05*Math.sin(rot);
+  ctx.beginPath(); ctx.moveTo(mx,cy-R); ctx.lineTo(mx,cy+R);
+  ctx.strokeStyle='rgba(70,18,18,.55)'; ctx.lineWidth=3.5; ctx.stroke();
+  ctx.restore();
+
+  // Specular
+  const hl=ctx.createRadialGradient(cx-R*.3,cy-R*.28,0,cx-R*.3,cy-R*.28,R*.52);
+  hl.addColorStop(0,'rgba(255,240,230,.35)');
+  hl.addColorStop(1,'rgba(255,240,230,0)');
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.fillStyle=hl; ctx.fill();
+
+  // Outline
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
+  ctx.strokeStyle='rgba(65,18,18,.75)'; ctx.lineWidth=2; ctx.stroke();
+}
+
+/* ─────────────────────────────────────────────────────────
+   ANIMATION LOOP
+───────────────────────────────────────────────────────── */
+const variants = [
+  {id:'b1', fn:drawPinky},
+  {id:'b2', fn:drawDarkEigen},
+  {id:'b3', fn:drawNeuralGlow},
+  {id:'b4', fn:drawMinimal},
+  {id:'b5', fn:drawDual},
+  {id:'b6', fn:drawEmoji},
+];
+
+const ctxMap = variants.map(v => {
+  const c = document.getElementById(v.id);
+  return {ctx:c.getContext('2d'), fn:v.fn, W:c.width, H:c.height};
+});
+
+function loop(ts) {
+  for (const v of ctxMap) v.fn(v.ctx, v.W, v.H, ts);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
