@@ -749,30 +749,40 @@ function handleSubmit(e) {
   btn.textContent = 'Sending...';
   btn.disabled = true;
   input.disabled = true;
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000); // 10s hard timeout
+
+  function reset(msg) {
+    clearTimeout(timer);
+    btn.textContent = msg || 'Try again';
+    btn.disabled = false;
+    input.disabled = false;
+  }
+
   fetch('https://api.mindeigen.com/waitlist', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: input.value.trim() })
+    body: JSON.stringify({ email: input.value.trim() }),
+    signal: ctrl.signal,
   })
   .then(r => r.json())
   .then(data => {
+    clearTimeout(timer);
     if (data.status === 'ok' || data.status === 'duplicate') {
       btn.textContent = data.status === 'duplicate' ? '✓ Already on the list!' : '✓ You\'re on the list!';
       btn.style.background = '#22c55e';
+      btn.disabled = false;
       if (data.status === 'ok') {
         const count = document.getElementById('count-display');
         count.textContent = parseInt(count.textContent) + 1;
       }
     } else {
-      btn.textContent = 'Try again';
-      btn.disabled = false;
-      input.disabled = false;
+      reset('Try again');
     }
   })
-  .catch(() => {
-    btn.textContent = 'Try again';
-    btn.disabled = false;
-    input.disabled = false;
+  .catch(err => {
+    reset(err.name === 'AbortError' ? 'Timed out — try again' : 'Try again');
   });
 }
 </script>
