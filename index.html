@@ -69,6 +69,7 @@
     }
     #hero-canvas {
       position: absolute; inset: 0;
+      width: 100%; height: 100%;
       pointer-events: none; z-index: 0;
     }
     .hero-content { position: relative; z-index: 1; max-width: 820px; }
@@ -529,85 +530,120 @@
 </footer>
 
 <script>
-/* ── HERO CANVAS: floating math symbols + connecting lines ── */
+/* ── HERO CANVAS: 3D depth field with math symbols + perspective ── */
 (function() {
   const canvas = document.getElementById('hero-canvas');
-  const ctx = canvas.getContext('2d');
-  const SYMBOLS = ['λ', '∑', '∇', '∞', 'Av=λv', '∂', 'ℝⁿ', 'σ', 'μ', '⊗', '∈', 'φ', 'Δ', '∏'];
-  const ACCENT = '#5b8dee';
-  const GOLD   = '#e0b84a';
-  const PURPLE = '#a78bfa';
-  let W, H, particles;
+  const ctx    = canvas.getContext('2d');
+  const SYMS   = ['λ','∑','∇','∞','∂','σ','μ','φ','Δ','∏','⊗','∈','ℝ','Av=λv','det(A)','∇²'];
+  const LAYERS = [
+    { z: 0.2, speed: 0.12, alpha: 0.06, color: '#5b8dee' },
+    { z: 0.5, speed: 0.25, alpha: 0.13, color: '#a78bfa' },
+    { z: 0.8, speed: 0.45, alpha: 0.22, color: '#e0b84a' },
+    { z: 1.0, speed: 0.60, alpha: 0.30, color: '#5b8dee' },
+  ];
+  let W, H, particles, t0 = null;
 
   function resize() {
-    W = canvas.width  = canvas.offsetWidth;
-    H = canvas.height = canvas.offsetHeight;
+    W = canvas.width  = canvas.offsetWidth  || window.innerWidth;
+    H = canvas.height = canvas.offsetHeight || window.innerHeight;
   }
 
-  function mkParticle() {
-    const colors = [ACCENT, PURPLE, GOLD];
+  function mkParticle(layer) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 0.3 + Math.random() * 0.7; // normalized radius
     return {
-      x: Math.random() * W,
-      y: Math.random() * H,
-      vx: (Math.random() - .5) * .35,
-      vy: (Math.random() - .5) * .35,
-      sym: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
-      size: 11 + Math.random() * 10,
-      opacity: .08 + Math.random() * .18,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      // 3D position in [-1,1] space
+      rx: (Math.random() - .5) * 2,
+      ry: (Math.random() - .5) * 2,
+      rz: layer.z + (Math.random() - .5) * 0.15,
+      vx: (Math.random() - .5) * layer.speed * 0.001,
+      vy: (Math.random() - .5) * layer.speed * 0.001,
+      sym: SYMS[Math.floor(Math.random() * SYMS.length)],
+      alpha: layer.alpha * (0.7 + Math.random() * 0.6),
+      color: layer.color,
       phase: Math.random() * Math.PI * 2,
+      wob: 0.0003 + Math.random() * 0.0004,
+    };
+  }
+
+  function project(p, t) {
+    // slow global rotation around y-axis
+    const rotY = t * 0.00008;
+    const cosY = Math.cos(rotY), sinY = Math.sin(rotY);
+    const x3 = p.rx * cosY - p.rz * sinY;
+    const z3 = p.rx * sinY + p.rz * cosY;
+    // perspective divide
+    const fov = 1.8;
+    const scale = fov / (fov + z3 + 1);
+    return {
+      sx: W/2 + x3 * scale * W * 0.55,
+      sy: H/2 + p.ry * scale * H * 0.55,
+      scale,
+      depth: z3,
     };
   }
 
   function init() {
     resize();
-    const count = Math.max(18, Math.floor(W * H / 22000));
-    particles = Array.from({length: count}, mkParticle);
+    particles = [];
+    const total = Math.max(30, Math.min(70, Math.floor(W * H / 14000)));
+    for (const layer of LAYERS) {
+      const n = Math.round(total * (layer.z * 0.4 + 0.15));
+      for (let i = 0; i < n; i++) particles.push(mkParticle(layer));
+    }
+    // sort by depth (back to front)
+    particles.sort((a, b) => a.rz - b.rz);
   }
 
   function draw(t) {
+    if (!t0) t0 = t;
+    const dt = t - t0;
     ctx.clearRect(0, 0, W, H);
 
-    // draw connecting lines between close particles
-    for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < 140) {
+    // draw connections between nearby projected particles
+    const projected = particles.map(p => ({ p, ...project(p, dt) }));
+    for (let i = 0; i < projected.length; i++) {
+      for (let j = i + 1; j < projected.length; j++) {
+        const a = projected[i], b = projected[j];
+        const dx = a.sx - b.sx, dy = a.sy - b.sy;
+        const d2 = dx*dx + dy*dy;
+        if (d2 < 18000) {
+          const proximity = 1 - Math.sqrt(d2) / 134;
+          const depthFade = Math.min(a.scale, b.scale) * 0.5;
           ctx.beginPath();
-          ctx.strokeStyle = `rgba(91,141,238,${.045 * (1 - dist/140)})`;
-          ctx.lineWidth = .6;
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(91,141,238,${proximity * depthFade * 0.12})`;
+          ctx.lineWidth = proximity * 0.8;
+          ctx.moveTo(a.sx, a.sy);
+          ctx.lineTo(b.sx, b.sy);
           ctx.stroke();
         }
       }
     }
 
     // draw symbols
-    particles.forEach(p => {
-      const breathe = Math.sin(t * .0007 + p.phase) * .04;
-      ctx.font = `${p.size}px 'JetBrains Mono', monospace`;
+    for (const { p, sx, sy, scale, depth } of projected) {
+      const breathe = 1 + Math.sin(dt * p.wob + p.phase) * 0.12;
+      const fontSize = Math.max(7, Math.round(scale * 22 * breathe));
+      ctx.font = `${fontSize}px 'JetBrains Mono',monospace`;
+      ctx.globalAlpha = p.alpha * scale * 1.4;
       ctx.fillStyle = p.color;
-      ctx.globalAlpha = p.opacity + breathe;
-      ctx.fillText(p.sym, p.x, p.y);
+      ctx.fillText(p.sym, sx, sy);
       ctx.globalAlpha = 1;
-      p.x += p.vx;
-      p.y += p.vy;
-      if (p.x < -40) p.x = W + 20;
-      if (p.x > W + 40) p.x = -20;
-      if (p.y < -20) p.y = H + 20;
-      if (p.y > H + 20) p.y = -20;
-    });
+
+      // gentle drift
+      p.rx += p.vx + Math.sin(dt * 0.0002 + p.phase) * 0.00015;
+      p.ry += p.vy + Math.cos(dt * 0.0002 + p.phase) * 0.00015;
+      // wrap
+      if (p.rx > 1.4) p.rx = -1.4;
+      if (p.rx < -1.4) p.rx = 1.4;
+      if (p.ry > 1.4) p.ry = -1.4;
+      if (p.ry < -1.4) p.ry = 1.4;
+    }
   }
 
-  function loop(t) {
-    draw(t);
-    requestAnimationFrame(loop);
-  }
+  function loop(t) { draw(t); requestAnimationFrame(loop); }
 
-  window.addEventListener('resize', () => { resize(); });
+  window.addEventListener('resize', () => { resize(); init(); });
   init();
   requestAnimationFrame(loop);
 })();
