@@ -612,12 +612,19 @@
   requestAnimationFrame(loop);
 })();
 
-/* ── WAITLIST COUNTER ANIMATION ── */
+/* ── WAITLIST COUNTER — live from API ── */
 window.addEventListener('load', () => {
   const el = document.getElementById('count-display');
-  let n = 12, target = 47;
-  const step = () => { n = Math.min(n + 3, target); el.textContent = n; if (n < target) setTimeout(step, 40); };
-  setTimeout(step, 900);
+  fetch('https://api.mindeigen.com/waitlist/count')
+    .then(r => r.json())
+    .then(d => {
+      const target = Math.max(d.count || 0, 1);
+      let n = Math.max(1, Math.floor(target * 0.6));
+      el.textContent = n;
+      const step = () => { n = Math.min(n + 1, target); el.textContent = n; if (n < target) setTimeout(step, 50); };
+      setTimeout(step, 700);
+    })
+    .catch(() => { el.textContent = '—'; });
 });
 
 /* ── WAITLIST FORM ── */
