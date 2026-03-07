@@ -534,7 +534,8 @@
     'G↔¬Bew(G)','¬Bew(G)','TNT⊬G','∀x(x+0=x)','MU?','Bew(n)','G:¬Prov(⌈G⌉)',
   ];
 
-  let W, H, stars, orbiters, t0 = null;
+  let W, H, stars, orbiters, t0 = null, fontReady = false;
+  document.fonts.ready.then(() => { fontReady = true; });
 
   function resize() {
     W = canvas.width  = canvas.offsetWidth  || window.innerWidth;
@@ -673,7 +674,7 @@
       const alpha = isBehind ? depth * 0.28 : depth * 0.80;
       const color = isBehind ? '#5b8dee' : (o.angle % (Math.PI * 2) < Math.PI ? '#e0b84a' : '#a78bfa');
 
-      ctx.font = `${fontSize}px 'JetBrains Mono',monospace`;
+      ctx.font = `${fontSize}px ${fontReady ? "'JetBrains Mono'," : ''}monospace`;
       ctx.globalAlpha = alpha;
       ctx.fillStyle = color;
       ctx.fillText(o.sym, ox - fontSize * 0.3, oy);
@@ -702,8 +703,8 @@
 
   function loop(ts) { draw(ts); requestAnimationFrame(loop); }
   window.addEventListener('resize', () => { resize(); initStars(); initOrbiters(); });
-  init();
-  requestAnimationFrame(loop);
+  // Defer one rAF so layout is complete and canvas has real dimensions
+  requestAnimationFrame(() => { init(); requestAnimationFrame(loop); });
 })();
 
 /* ── WAITLIST COUNTER — live from API ── */
