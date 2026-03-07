@@ -535,7 +535,7 @@
     btn.textContent = 'Sending...';
     btn.disabled = true;
     input.disabled = true;
-    fetch('http://195.35.8.211:5001/waitlist', {
+    fetch('https://api.mindeigen.com/waitlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: input.value.trim() })
