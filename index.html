@@ -36,23 +36,23 @@
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1.1rem 2.5rem;
-      background: rgba(7,8,15,0.85);
+      padding: 1rem 2rem;
+      background: rgba(7,8,15,0.88);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
     .logo {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 1.15rem; font-weight: 500;
+      font-size: 1.1rem; font-weight: 500;
       color: var(--text); text-decoration: none; letter-spacing: -0.02em;
     }
     .logo span { color: var(--accent); }
-    nav ul { display: flex; gap: 2rem; list-style: none; }
-    nav ul a { color: var(--dim); text-decoration: none; font-size: 0.9rem; transition: color .2s; }
+    nav ul { display: flex; gap: 1.75rem; list-style: none; }
+    nav ul a { color: var(--dim); text-decoration: none; font-size: .875rem; transition: color .2s; }
     nav ul a:hover { color: var(--text); }
     .nav-cta {
       background: var(--accent); color: #fff; border: none;
-      padding: .5rem 1.25rem; border-radius: 6px; font-size: .875rem;
+      padding: .45rem 1.1rem; border-radius: 6px; font-size: .85rem;
       font-weight: 500; cursor: pointer; font-family: inherit;
       transition: opacity .2s;
     }
@@ -60,44 +60,34 @@
 
     /* ── HERO ── */
     .hero {
-      min-height: 100vh;
+      min-height: 100dvh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      padding: 8rem 2rem 4rem;
+      padding: 5rem 2rem 3rem;
       position: relative; overflow: hidden;
       text-align: center;
     }
-    .hero::before {
-      content: '';
+    #hero-canvas {
       position: absolute; inset: 0;
-      background: radial-gradient(ellipse 80% 60% at 50% 40%,
-        rgba(91,141,238,.12) 0%, transparent 70%);
-      pointer-events: none;
+      pointer-events: none; z-index: 0;
     }
-    .grid-bg {
-      position: absolute; inset: 0; opacity: .035;
-      background-image:
-        linear-gradient(var(--accent) 1px, transparent 1px),
-        linear-gradient(90deg, var(--accent) 1px, transparent 1px);
-      background-size: 60px 60px;
-    }
+    .hero-content { position: relative; z-index: 1; max-width: 820px; }
     .badge {
       display: inline-flex; align-items: center; gap: .45rem;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 999px; padding: .35rem 1rem;
-      font-size: .78rem; color: var(--accent); font-weight: 500;
-      margin-bottom: 2rem; letter-spacing: .04em;
+      background: rgba(14,16,24,0.85); border: 1px solid var(--border);
+      border-radius: 999px; padding: .3rem .9rem;
+      font-size: .75rem; color: var(--accent); font-weight: 500;
+      margin-bottom: 1.75rem; letter-spacing: .04em;
     }
     .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 
     h1 {
-      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-size: clamp(2.2rem, 6vw, 4.8rem);
       font-weight: 700;
-      line-height: 1.08;
+      line-height: 1.1;
       letter-spacing: -0.04em;
-      max-width: 800px;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.25rem;
     }
     h1 em {
       font-style: normal;
@@ -106,31 +96,30 @@
       background-clip: text;
     }
     .hero-sub {
-      font-size: clamp(1rem, 2vw, 1.25rem);
-      color: var(--dim); max-width: 560px;
-      margin-bottom: 2.5rem; font-weight: 300;
+      font-size: clamp(.95rem, 2vw, 1.15rem);
+      color: var(--dim); max-width: 580px; margin: 0 auto 1.75rem;
+      font-weight: 300; line-height: 1.65;
     }
     .hero-equation {
       font-family: 'JetBrains Mono', monospace;
-      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+      font-size: clamp(.95rem, 2.2vw, 1.45rem);
       color: var(--gold);
-      margin-bottom: 2.8rem;
-      opacity: .9;
-      letter-spacing: .04em;
+      margin-bottom: 2.25rem;
+      opacity: .9; letter-spacing: .03em;
     }
     .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
     .btn-primary {
       background: var(--accent); color: #fff; border: none;
-      padding: .85rem 2rem; border-radius: 8px; font-size: 1rem;
+      padding: .8rem 1.8rem; border-radius: 8px; font-size: .95rem;
       font-weight: 600; cursor: pointer; font-family: inherit;
       transition: transform .15s, box-shadow .15s;
-      box-shadow: 0 0 30px rgba(91,141,238,.35);
+      box-shadow: 0 0 28px rgba(91,141,238,.35);
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(91,141,238,.5); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 38px rgba(91,141,238,.5); }
     .btn-secondary {
       background: transparent; color: var(--dim);
       border: 1px solid var(--border);
-      padding: .85rem 2rem; border-radius: 8px; font-size: 1rem;
+      padding: .8rem 1.8rem; border-radius: 8px; font-size: .95rem;
       font-weight: 500; cursor: pointer; font-family: inherit;
       transition: color .2s, border-color .2s;
     }
@@ -138,34 +127,34 @@
 
     /* ── CONCEPT STRIP ── */
     .concept-strip {
-      padding: 3rem 2rem;
+      padding: 2.25rem 2rem;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       background: var(--surface);
     }
     .concept-strip-inner {
       max-width: 1100px; margin: 0 auto;
-      display: flex; gap: 3rem; align-items: center; justify-content: center;
+      display: flex; gap: 2rem; align-items: center; justify-content: center;
       flex-wrap: wrap;
     }
     .concept-item {
-      display: flex; align-items: center; gap: .75rem;
-      color: var(--dim); font-size: .9rem;
+      display: flex; align-items: center; gap: .65rem;
+      color: var(--dim); font-size: .875rem;
     }
-    .concept-item .icon { font-size: 1.2rem; }
+    .concept-item .icon { font-size: 1.1rem; }
 
     /* ── SECTIONS ── */
-    section { padding: 6rem 2rem; }
+    section { padding: 5rem 2rem; }
     .section-inner { max-width: 1100px; margin: 0 auto; }
     .section-label {
       font-family: 'JetBrains Mono', monospace;
-      font-size: .75rem; letter-spacing: .12em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 1rem;
+      font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: .85rem;
     }
     h2 {
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-size: clamp(1.65rem, 3.5vw, 2.6rem);
       font-weight: 700; letter-spacing: -0.03em;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.1rem;
     }
     h2 em {
       font-style: normal;
@@ -173,85 +162,87 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .section-lead { font-size: 1.1rem; color: var(--dim); max-width: 560px; margin-bottom: 3rem; }
+    .section-lead { font-size: 1.05rem; color: var(--dim); max-width: 540px; margin-bottom: 2.75rem; }
 
     /* ── WHAT IS ── */
     .what-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
-      align-items: center;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem;
+      align-items: start;
     }
     .eigen-visual {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px; padding: 2.5rem;
+      border-radius: 12px; padding: 2.25rem;
       font-family: 'JetBrains Mono', monospace;
     }
-    .eigen-visual .eq-label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1.2rem; }
+    .eigen-visual .eq-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1.1rem; }
     .eq-line {
-      display: flex; align-items: center; gap: .75rem;
-      margin-bottom: .85rem; font-size: 1rem;
+      display: flex; align-items: center; gap: .6rem;
+      margin-bottom: .75rem; font-size: .95rem; flex-wrap: wrap;
     }
     .eq-matrix {
       border-left: 2px solid var(--accent); border-right: 2px solid var(--accent);
-      padding: .4rem .75rem; line-height: 1.8; color: var(--accent2);
+      padding: .35rem .65rem; line-height: 1.7; color: var(--accent2); font-size: .82rem;
     }
-    .eq-vec { color: var(--gold); }
+    .eq-vec { color: var(--gold); font-size: .82rem; }
     .eq-lambda { color: var(--accent); font-size: 1.1rem; }
     .eq-arrow { color: var(--muted); }
-    .what-points { list-style: none; display: flex; flex-direction: column; gap: 1.25rem; }
+    .what-points { list-style: none; display: flex; flex-direction: column; gap: 1.1rem; }
     .what-points li {
-      display: flex; gap: 1rem; align-items: flex-start;
-      padding: 1.1rem 1.25rem;
+      display: flex; gap: .9rem; align-items: flex-start;
+      padding: 1rem 1.1rem;
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 8px;
     }
-    .what-points .pt-icon { font-size: 1.3rem; flex-shrink: 0; margin-top: .1rem; }
-    .what-points h4 { font-size: .95rem; font-weight: 600; margin-bottom: .25rem; }
-    .what-points p { font-size: .875rem; color: var(--dim); line-height: 1.55; }
+    .what-points .pt-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: .1rem; }
+    .what-points h4 { font-size: .92rem; font-weight: 600; margin-bottom: .2rem; }
+    .what-points p { font-size: .845rem; color: var(--dim); line-height: 1.55; }
 
     /* ── HOW IT WORKS ── */
     .how-bg { background: var(--surface); }
+
+    /* 5-step grid: 3 top + 2 centered bottom */
     .steps {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem; margin-top: 3rem;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1.25rem;
+      margin-top: 2.75rem;
     }
-    .step {
-      padding: 1.75rem; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 10px;
-      position: relative;
+    .step { grid-column: span 2; }
+    .step:nth-child(4) { grid-column: 2 / span 2; }
+    .step:nth-child(5) { grid-column: 4 / span 2; }
+    .step-card {
+      padding: 1.6rem; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px; height: 100%;
     }
     .step-num {
       font-family: 'JetBrains Mono', monospace;
-      font-size: .75rem; color: var(--accent); margin-bottom: .85rem;
+      font-size: .72rem; color: var(--accent); margin-bottom: .75rem;
       letter-spacing: .08em;
     }
-    .step h4 { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; }
-    .step p { font-size: .875rem; color: var(--dim); line-height: 1.55; }
-    .step-connector {
-      position: absolute; top: 50%; right: -1rem;
-      transform: translateY(-50%);
-      color: var(--border); font-size: 1.2rem; z-index: 1;
-    }
+    .step h4 { font-size: .95rem; font-weight: 600; margin-bottom: .45rem; }
+    .step p { font-size: .845rem; color: var(--dim); line-height: 1.55; }
 
-    /* ── USE CASES ── */
+    /* ── USE CASES — 3+3 grid ── */
     .use-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
     }
     .use-card {
-      padding: 1.75rem;
+      padding: 1.6rem;
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 10px; transition: border-color .2s, transform .15s;
     }
     .use-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .use-icon { font-size: 1.75rem; margin-bottom: 1rem; }
-    .use-card h4 { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; }
-    .use-card p { font-size: .875rem; color: var(--dim); line-height: 1.55; }
+    .use-icon { font-size: 1.65rem; margin-bottom: .85rem; }
+    .use-card h4 { font-size: .95rem; font-weight: 600; margin-bottom: .4rem; }
+    .use-card p { font-size: .845rem; color: var(--dim); line-height: 1.55; }
     .use-tag {
-      display: inline-block; margin-top: 1rem;
-      font-size: .72rem; font-family: 'JetBrains Mono', monospace;
+      display: inline-block; margin-top: .85rem;
+      font-size: .7rem; font-family: 'JetBrains Mono', monospace;
       color: var(--accent2); background: rgba(167,139,250,.1);
-      padding: .2rem .6rem; border-radius: 4px; letter-spacing: .04em;
+      padding: .18rem .55rem; border-radius: 4px; letter-spacing: .04em;
     }
 
     /* ── WAITLIST ── */
@@ -259,40 +250,48 @@
       background: linear-gradient(135deg, rgba(91,141,238,.08) 0%, rgba(167,139,250,.08) 100%);
       border-top: 1px solid var(--border);
     }
-    .waitlist-inner {
-      max-width: 560px; margin: 0 auto; text-align: center;
-    }
-    .waitlist-inner p { color: var(--dim); margin-bottom: 2rem; font-size: 1.05rem; }
-    .waitlist-form { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; }
+    .waitlist-inner { max-width: 540px; margin: 0 auto; text-align: center; }
+    .waitlist-inner p { color: var(--dim); margin-bottom: 1.75rem; font-size: 1rem; }
+    .waitlist-form { display: flex; gap: .65rem; flex-wrap: wrap; justify-content: center; }
     .waitlist-form input {
-      flex: 1; min-width: 240px;
+      flex: 1; min-width: 220px;
       background: var(--surface); border: 1px solid var(--border);
-      color: var(--text); padding: .85rem 1.25rem;
-      border-radius: 8px; font-size: 1rem; font-family: inherit;
+      color: var(--text); padding: .8rem 1.1rem;
+      border-radius: 8px; font-size: .95rem; font-family: inherit;
       outline: none; transition: border-color .2s;
     }
     .waitlist-form input::placeholder { color: var(--muted); }
     .waitlist-form input:focus { border-color: var(--accent); }
     .waitlist-count {
-      margin-top: 1.25rem; font-size: .8rem; color: var(--muted);
+      margin-top: 1.1rem; font-size: .78rem; color: var(--muted);
       font-family: 'JetBrains Mono', monospace;
     }
     .waitlist-count span { color: var(--accent); }
 
     /* ── FOOTER ── */
     footer {
-      padding: 2.5rem; text-align: center;
+      padding: 2.25rem; text-align: center;
       border-top: 1px solid var(--border);
-      font-size: .8rem; color: var(--muted);
+      font-size: .78rem; color: var(--muted);
     }
     footer a { color: var(--dim); text-decoration: none; }
     footer a:hover { color: var(--text); }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      nav ul { display: none; }
+    @media (max-width: 900px) {
       .what-grid { grid-template-columns: 1fr; }
-      .step-connector { display: none; }
+      .use-grid { grid-template-columns: repeat(2, 1fr); }
+      .steps { grid-template-columns: repeat(2, 1fr); }
+      .step, .step:nth-child(4), .step:nth-child(5) { grid-column: span 1; }
+    }
+    @media (max-width: 600px) {
+      nav ul { display: none; }
+      .use-grid { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .step, .step:nth-child(4), .step:nth-child(5) { grid-column: span 1; }
+      h1 { font-size: 2rem; }
+      .hero { padding: 5rem 1.25rem 2.5rem; }
+      section { padding: 3.5rem 1.25rem; }
     }
   </style>
 </head>
@@ -304,29 +303,31 @@
   <ul>
     <li><a href="#what">Concept</a></li>
     <li><a href="#how">How it works</a></li>
-    <li><a href="#usecases">Use cases</a></li>
+    <li><a href="#usecases">Features</a></li>
   </ul>
   <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="grid-bg"></div>
-  <div class="badge"><span class="badge-dot"></span> Private Beta — Now Accepting Applications</div>
-  <h1>Your mind has an <em>eigenvalue</em>.<br/>We built an agent to find it.</h1>
-  <p class="hero-sub">
-    In mathematics, an eigenvector transforms but never loses direction — it only scales.
-    Your thinking works the same way. MindEigen deploys an AI agent that finds your
-    cognitive signature, then amplifies it — recursively, in the cloud, forever.
-  </p>
-  <div class="hero-equation">A·mind = λ·mind&nbsp;&nbsp;→&nbsp;&nbsp;find λ, amplify it. ∞</div>
-  <div class="hero-actions">
-    <button class="btn-primary" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">
-      Request early access →
-    </button>
-    <button class="btn-secondary" onclick="document.getElementById('what').scrollIntoView({behavior:'smooth'})">
-      See how it works
-    </button>
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <div class="badge"><span class="badge-dot"></span> Private Beta — Now Accepting Applications</div>
+    <h1>Your mind has an <em>eigenvalue</em>.<br/>We built an agent to find it.</h1>
+    <p class="hero-sub">
+      In mathematics, an eigenvector transforms but never loses direction — it only scales.
+      MindEigen deploys an AI agent that finds your cognitive signature, then amplifies it —
+      recursively, autonomously, in the cloud.
+    </p>
+    <div class="hero-equation">A·mind = λ·mind &nbsp;→&nbsp; find λ, amplify it. ∞</div>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">
+        Request early access →
+      </button>
+      <button class="btn-secondary" onclick="document.getElementById('what').scrollIntoView({behavior:'smooth'})">
+        See how it works
+      </button>
+    </div>
   </div>
 </section>
 
@@ -351,9 +352,7 @@
         <p class="section-lead">
           MindEigen is not an app. It's a persistent AI agent deployed in the cloud
           that operates on your behalf — learning your thinking style, acquiring new
-          capabilities, and improving itself continuously.<br/><br/>
-          The harder problems you give it, the sharper it gets. It doesn't just execute tasks —
-          it evolves the skills to do them better next time.
+          capabilities, and improving itself continuously.
         </p>
         <ul class="what-points">
           <li>
@@ -381,7 +380,7 @@
             <span class="pt-icon">🌐</span>
             <div>
               <h4>Shared community intelligence</h4>
-              <p>Skills developed by any agent in the network — vetted, curated, and safe — become available to the whole. The good of the many drives the growth of each.</p>
+              <p>Skills proven by any agent — vetted, curated, safe — flow into a shared network. The good of the many drives the growth of each.</p>
             </div>
           </li>
         </ul>
@@ -398,7 +397,7 @@
           <span class="eq-vec">v<br/>amplified<br/>thinking</span>
         </div>
         <br/>
-        <div style="font-size:.8rem;color:var(--muted);line-height:1.7;">
+        <div style="font-size:.78rem;color:var(--muted);line-height:1.75;">
           <div>A &nbsp;= your personal AI agent</div>
           <div>v &nbsp;= your cognitive direction</div>
           <div>λ &nbsp;= the eigenvalue (your amplification factor)</div>
@@ -406,7 +405,7 @@
           <div style="color:var(--accent2);">If your agent is truly yours,<br/>every transformation only makes you<br/>more <em style="color:var(--gold)">you</em> — at a higher level.</div>
         </div>
         <br/>
-        <div style="font-size:.75rem;color:var(--muted);line-height:1.6;border-top:1px solid var(--border);padding-top:.85rem;">
+        <div style="font-size:.73rem;color:var(--muted);line-height:1.65;border-top:1px solid var(--border);padding-top:.8rem;">
           <span style="color:var(--accent);">∞</span> &nbsp;Each cycle, your agent self-improves.<br/>
           <span style="color:var(--accent);">🌐</span> &nbsp;Proven skills flow to every agent in the network.
         </div>
@@ -420,37 +419,33 @@
   <div class="section-inner">
     <div class="section-label">// how it works</div>
     <h2>A living agent.<br/><em>Continuously evolving</em> for you.</h2>
-    <p class="section-lead">MindEigen agents run a recursive improvement loop — each cycle measurably better than the last.</p>
+    <p class="section-lead">Five recursive stages — each loop measurably better than the last. The agent never stops.</p>
     <div class="steps">
-      <div class="step">
+      <div class="step"><div class="step-card">
         <div class="step-num">01 // DEPLOY</div>
         <h4>Your agent goes live</h4>
         <p>A personal AI agent is provisioned in the cloud with your goals, context, and preferences. It starts working immediately.</p>
-        <div class="step-connector">→</div>
-      </div>
-      <div class="step">
+      </div></div>
+      <div class="step"><div class="step-card">
         <div class="step-num">02 // ACT</div>
         <h4>Operates on your behalf</h4>
         <p>Your agent handles tasks, tracks outcomes, builds memory, and takes initiative — all aligned with your intent.</p>
-        <div class="step-connector">→</div>
-      </div>
-      <div class="step">
+      </div></div>
+      <div class="step"><div class="step-card">
         <div class="step-num">03 // EVOLVE</div>
         <h4>Self-improves every cycle</h4>
         <p>The agent introspects its own performance, identifies capability gaps, and autonomously improves the skills it uses to serve you.</p>
-        <div class="step-connector">→</div>
-      </div>
-      <div class="step">
+      </div></div>
+      <div class="step"><div class="step-card">
         <div class="step-num">04 // HEAL</div>
         <h4>Diagnose and self-recover</h4>
-        <p>Your agent monitors its own health continuously. Errors, drift, and failures are caught, diagnosed, and resolved autonomously — it never stays broken.</p>
-        <div class="step-connector">→</div>
-      </div>
-      <div class="step">
+        <p>Your agent monitors its own health continuously. Errors, drift, and failures are diagnosed and resolved autonomously — it never stays broken.</p>
+      </div></div>
+      <div class="step"><div class="step-card">
         <div class="step-num">05 // CONTRIBUTE</div>
         <h4>Gives back to the network</h4>
         <p>Proven, vetted improvements enter a curated community skill graph. Every agent benefits from every other agent's growth.</p>
-      </div>
+      </div></div>
     </div>
   </div>
 </section>
@@ -481,28 +476,22 @@
         <span class="use-tag">// RSI built-in</span>
       </div>
       <div class="use-card">
+        <div class="use-icon">🩺</div>
+        <h4>Self-Monitoring &amp; Healing</h4>
+        <p>Continuous health checks. When something breaks, the agent diagnoses the root cause and recovers — autonomously, every time.</p>
+        <span class="use-tag">// always recovers</span>
+      </div>
+      <div class="use-card">
         <div class="use-icon">🌐</div>
         <h4>Community Skill Graph</h4>
         <p>Skills proven by any agent — vetted, safety-checked, curated — flow into a shared network. Your agent inherits the best of all.</p>
         <span class="use-tag">// good of the many</span>
       </div>
       <div class="use-card">
-        <div class="use-icon">🩺</div>
-        <h4>Self-Monitoring & Self-Healing</h4>
-        <p>Your agent continuously monitors its own health. When it detects drift, failure, or a stuck state — it diagnoses, recovers, and keeps running. No babysitting required.</p>
-        <span class="use-tag">// always recovers</span>
-      </div>
-      <div class="use-card">
         <div class="use-icon">🔐</div>
         <h4>Safe by Design</h4>
         <p>Every shared capability passes a curation gate. No unchecked code, no unvetted behaviour. The network self-regulates.</p>
         <span class="use-tag">// curated, not wild</span>
-      </div>
-      <div class="use-card">
-        <div class="use-icon">📈</div>
-        <h4>Compounding Returns</h4>
-        <p>The longer your agent runs, the more capable it becomes. Your investment in it compounds — just like your best human relationships.</p>
-        <span class="use-tag">// asymmetric leverage</span>
       </div>
     </div>
   </div>
@@ -528,64 +517,143 @@
 
 <!-- FOOTER -->
 <footer>
-  <div style="margin-bottom:.75rem;">
+  <div style="margin-bottom:.65rem;">
     <a href="#">Privacy</a> &nbsp;·&nbsp;
     <a href="#">Terms</a> &nbsp;·&nbsp;
     <a href="mailto:hello@mindeigen.com">hello@mindeigen.com</a>
   </div>
   <div>© 2026 MindEigen. All rights reserved.</div>
-  <div style="margin-top:.5rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:#2a2f45;">
+  <div style="margin-top:.45rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#2a2f45;">
     A·mind = λ·mind
   </div>
 </footer>
 
 <script>
-  // Subtle count animation on load
-  window.addEventListener('load', () => {
-    const el = document.getElementById('count-display');
-    let n = 12;
-    const target = 47;
-    const step = () => {
-      n = Math.min(n + 3, target);
-      el.textContent = n;
-      if (n < target) setTimeout(step, 40);
-    };
-    setTimeout(step, 800);
-  });
+/* ── HERO CANVAS: floating math symbols + connecting lines ── */
+(function() {
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  const SYMBOLS = ['λ', '∑', '∇', '∞', 'Av=λv', '∂', 'ℝⁿ', 'σ', 'μ', '⊗', '∈', 'φ', 'Δ', '∏'];
+  const ACCENT = '#5b8dee';
+  const GOLD   = '#e0b84a';
+  const PURPLE = '#a78bfa';
+  let W, H, particles;
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    const input = document.getElementById('email-input');
-    const btn = e.target.querySelector('button');
-    btn.textContent = 'Sending...';
-    btn.disabled = true;
-    input.disabled = true;
-    fetch('https://api.mindeigen.com/waitlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: input.value.trim() })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.status === 'ok' || data.status === 'duplicate') {
-        btn.textContent = data.status === 'duplicate' ? '✓ Already on the list!' : '✓ You\'re on the list!';
-        btn.style.background = '#22c55e';
-        if (data.status === 'ok') {
-          const count = document.getElementById('count-display');
-          count.textContent = parseInt(count.textContent) + 1;
+  function resize() {
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+
+  function mkParticle() {
+    const colors = [ACCENT, PURPLE, GOLD];
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - .5) * .35,
+      vy: (Math.random() - .5) * .35,
+      sym: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+      size: 11 + Math.random() * 10,
+      opacity: .08 + Math.random() * .18,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      phase: Math.random() * Math.PI * 2,
+    };
+  }
+
+  function init() {
+    resize();
+    const count = Math.max(18, Math.floor(W * H / 22000));
+    particles = Array.from({length: count}, mkParticle);
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+
+    // draw connecting lines between close particles
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 140) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(91,141,238,${.045 * (1 - dist/140)})`;
+          ctx.lineWidth = .6;
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
         }
-      } else {
-        btn.textContent = 'Try again';
-        btn.disabled = false;
-        input.disabled = false;
       }
-    })
-    .catch(() => {
+    }
+
+    // draw symbols
+    particles.forEach(p => {
+      const breathe = Math.sin(t * .0007 + p.phase) * .04;
+      ctx.font = `${p.size}px 'JetBrains Mono', monospace`;
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.opacity + breathe;
+      ctx.fillText(p.sym, p.x, p.y);
+      ctx.globalAlpha = 1;
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < -40) p.x = W + 20;
+      if (p.x > W + 40) p.x = -20;
+      if (p.y < -20) p.y = H + 20;
+      if (p.y > H + 20) p.y = -20;
+    });
+  }
+
+  function loop(t) {
+    draw(t);
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', () => { resize(); });
+  init();
+  requestAnimationFrame(loop);
+})();
+
+/* ── WAITLIST COUNTER ANIMATION ── */
+window.addEventListener('load', () => {
+  const el = document.getElementById('count-display');
+  let n = 12, target = 47;
+  const step = () => { n = Math.min(n + 3, target); el.textContent = n; if (n < target) setTimeout(step, 40); };
+  setTimeout(step, 900);
+});
+
+/* ── WAITLIST FORM ── */
+function handleSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById('email-input');
+  const btn = e.target.querySelector('button');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  input.disabled = true;
+  fetch('https://api.mindeigen.com/waitlist', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: input.value.trim() })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === 'ok' || data.status === 'duplicate') {
+      btn.textContent = data.status === 'duplicate' ? '✓ Already on the list!' : '✓ You\'re on the list!';
+      btn.style.background = '#22c55e';
+      if (data.status === 'ok') {
+        const count = document.getElementById('count-display');
+        count.textContent = parseInt(count.textContent) + 1;
+      }
+    } else {
       btn.textContent = 'Try again';
       btn.disabled = false;
       input.disabled = false;
-    });
-  }
+    }
+  })
+  .catch(() => {
+    btn.textContent = 'Try again';
+    btn.disabled = false;
+    input.disabled = false;
+  });
+}
 </script>
 </body>
 </html>
