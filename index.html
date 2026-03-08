@@ -116,9 +116,7 @@
       position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
       display: flex; align-items: center; justify-content: space-between;
       padding: .7rem 2rem;
-      background: rgba(7,8,15,0.55);
-      backdrop-filter: blur(6px);
-      border-top: 1px solid rgba(30,34,53,0.6);
+      background: transparent;
       font-family: 'JetBrains Mono', monospace;
       gap: 1rem;
     }
@@ -132,7 +130,7 @@
     }
 
     h1 {
-      font-size: clamp(1.7rem, 3.6vw, 3.2rem);
+      font-size: clamp(1.87rem, 3.96vw, 3.52rem);
       font-weight: 700; line-height: 1.10; letter-spacing: -0.04em;
       margin-bottom: .3rem;
     }
@@ -144,10 +142,11 @@
       background-clip: text;
     }
     .hero-desc {
-      margin-top: .75rem;
+      margin-top: 1.1rem;
       font-size: clamp(.72rem, 1.2vw, .88rem);
-      color: var(--dim); line-height: 1.8;
+      color: var(--dim);
       font-family: 'JetBrains Mono', monospace;
+      display: flex; flex-direction: column; gap: 0.85rem;
     }
     /* hero-corner removed; description now lives below h1 */
     .btn-primary {
@@ -757,7 +756,7 @@
     const b   = getBrain();
     const ox  = b.cx + b.rx*Math.cos(dispOrigin);
     const oy  = b.cy + b.ry*Math.sin(dispOrigin);
-    const len = (b.rx + b.ry) * 0.82;
+    const len = (b.rx + b.ry) * 0.27;
 
     drawSaber(ox, oy, dispVec, len, glowAlpha);
   }
