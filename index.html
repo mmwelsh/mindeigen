@@ -820,7 +820,8 @@ function handleSubmit(e) {
     if (data.status === 'ok' || data.status === 'duplicate') {
       btn.textContent = data.status === 'duplicate' ? '✓ Already on the list!' : '✓ You\'re on the list!';
       btn.style.background = '#22c55e';
-      btn.disabled = false;
+      btn.disabled = true;
+      input.disabled = false;
       if (data.status === 'ok') {
         const count = document.getElementById('count-display');
         count.textContent = parseInt(count.textContent) + 1;
