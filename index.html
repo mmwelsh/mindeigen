@@ -42,23 +42,19 @@
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
     }
-    /* center block: logo + links */
-    .nav-center {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      display: flex; align-items: center; gap: 2rem;
-    }
+    /* logo left, links center (flex:1), right CTA */
     .logo {
       font-family: 'JetBrains Mono', monospace;
       font-size: 1.05rem; font-weight: 500;
       color: var(--text); text-decoration: none; letter-spacing: -0.02em;
+      flex: 0 0 auto;
     }
     .logo span { color: var(--accent); }
-    nav ul { display: flex; gap: 1.6rem; list-style: none; }
+    nav ul { display: flex; gap: 1.6rem; list-style: none; flex: 1; justify-content: center; }
     nav ul a { color: var(--dim); text-decoration: none; font-size: .84rem; transition: color .2s; }
     nav ul a:hover { color: var(--text); }
-    /* right block: beta label + CTA stacked */
     .nav-right {
-      margin-left: auto;
+      flex: 0 0 auto;
       display: flex; flex-direction: column; align-items: flex-end;
       gap: .12rem; padding: .35rem 0;
     }
@@ -80,18 +76,18 @@
     }
     .nav-cta:hover { opacity: .85; }
 
-    /* ── BRAIN GIF ── */
+    /* ── BRAIN GIF — bottom-anchored, bleeds slightly ── */
     #brain-gif {
       position: absolute; z-index: 1;
-      width: clamp(280px, 46vw, 600px);
+      width: clamp(280px, 48vw, 620px);
       height: auto;
-      left: 50%; top: 50%;
-      transform: translate(-38%, -52%);
+      left: 55%; bottom: -3vh; top: auto;
+      transform: translateX(-50%);
       pointer-events: none;
-      mix-blend-mode: screen;   /* black bg disappears — brain floats */
+      mix-blend-mode: screen;
     }
     @media (max-width: 640px) {
-      #brain-gif { width: clamp(220px, 80vw, 360px); transform: translate(-50%, -52%); }
+      #brain-gif { width: clamp(240px, 85vw, 380px); left: 50%; bottom: -2vh; }
     }
 
     /* ── HERO ── */
@@ -114,25 +110,7 @@
     @media (max-width: 640px) {
       .hero-content { max-width: 88vw; left: 1.25rem; top: 4rem; }
     }
-    /* kitty-corner sub — lower-right */
-    .hero-corner {
-      position: absolute; z-index: 1;
-      bottom: clamp(3.5rem, 8vh, 5.5rem); right: clamp(1.5rem, 5vw, 5rem);
-      max-width: min(320px, 34vw);
-      text-align: right;
-    }
-    @media (max-width: 640px) {
-      .hero-corner { max-width: 80vw; right: 1.25rem; bottom: 3.5rem; }
-    }
-    .hero-corner p {
-      font-size: clamp(.78rem, 1.4vw, .95rem);
-      color: var(--dim); line-height: 1.6;
-    }
-    .hero-corner .hero-tagline {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: clamp(.68rem, 1.1vw, .82rem);
-      color: var(--accent2); opacity: .75; margin-top: .45rem;
-    }
+    /* hero-corner removed */
     /* bottom equation banner — spans hero floor */
     .hero-floor {
       position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
@@ -154,17 +132,24 @@
     }
 
     h1 {
-      font-size: clamp(2.4rem, 5.5vw, 4.8rem);
-      font-weight: 700; line-height: 1.06; letter-spacing: -0.04em;
-      margin-bottom: .9rem;
+      font-size: clamp(1.7rem, 3.6vw, 3.2rem);
+      font-weight: 700; line-height: 1.10; letter-spacing: -0.04em;
+      margin-bottom: .3rem;
     }
     h1 em {
-      font-style: normal;
+      font-style: normal; display: block;
+      font-size: 1.42em; line-height: 1.0; letter-spacing: -0.05em;
       background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    /* (hero-sub / hero-geb now live in hero-floor and hero-corner) */
+    .hero-desc {
+      margin-top: .75rem;
+      font-size: clamp(.72rem, 1.2vw, .88rem);
+      color: var(--dim); line-height: 1.8;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* hero-corner removed; description now lives below h1 */
     .btn-primary {
       background: var(--accent); color: #fff; border: none;
       padding: .8rem 1.8rem; border-radius: 8px; font-size: .95rem;
@@ -356,14 +341,12 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-center">
-    <a class="logo" href="#"><span>mind</span>eigen</a>
-    <ul>
-      <li><a href="#what">Concept</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#usecases">Features</a></li>
-    </ul>
-  </div>
+  <a class="logo" href="#"><span>mind</span>eigen</a>
+  <ul>
+    <li><a href="#what">Concept</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#usecases">Features</a></li>
+  </ul>
   <div class="nav-right">
     <div class="nav-beta"><span class="nav-beta-dot"></span>Private Beta</div>
     <button class="nav-cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join waitlist</button>
@@ -375,15 +358,13 @@
   <canvas id="hero-canvas"></canvas>
   <img id="brain-gif" src="brain.gif" alt="" />
 
-  <!-- upper-left headline -->
+  <!-- upper-left headline + desc -->
   <div class="hero-content">
-    <h1>Your mind has an <em>Eigenvalue</em></h1>
-  </div>
-
-  <!-- lower-right kitty-corner -->
-  <div class="hero-corner">
-    <p>A persistent AI agent, deployed in the cloud —<br/>thinking, evolving, and healing on your behalf.</p>
-    <p class="hero-tagline">∃G · (G ↔ ¬Bew(⌈G⌉)) ⟹ T⊬G ∧ T⊬¬G</p>
+    <h1>Your mind has an<br/><em>Eigenvalue</em></h1>
+    <div class="hero-desc">
+      <div>Your agent. Always on.</div>
+      <div>Thinks. Evolves. Heals.</div>
+    </div>
   </div>
 
   <!-- bottom equation banner -->
@@ -599,86 +580,90 @@
 
   let W, H, stars, t0 = null;
 
-  /* ── State machine ─────────────────────────────────────
-     HOLD  → origin & direction stable, saber at full glow
-     DRIFT → origin slides along cortex to new site
-     SETTLE→ origin arrived, direction precesses into lock
+  /* ── State machine ──────────────────────────────────────
+     DRIFT  : origin moves along cortex to new site
+     SETTLE : origin locked; vector precesses slowly into lock (~3s)
+     HOLD   : everything stable; slow glow-breathe (3–5s)
   ──────────────────────────────────────────────────────── */
-  const S = { HOLD: 0, DRIFT: 1, SETTLE: 2 };
+  const S = { DRIFT: 0, SETTLE: 1, HOLD: 2 };
   let state      = S.HOLD;
   let stateStart = 0;
-  let holdDur    = 3200;
   let driftDur   = 2000;
-  let settleDur  = 950;
+  let settleDur  = 3000;  // ~3s precession settle
+  let holdDur    = 3500;
 
-  // Origin angle on brain ellipse surface
-  let originAngle = Math.PI * 0.75;
-  let originFrom  = Math.PI * 0.75;
-  let originTo    = Math.PI * 0.75;
+  // Origin angle on brain ellipse — constrained to upper half (sin < 0)
+  let originAngle = -Math.PI * 0.5;   // top of brain
+  let originFrom  = -Math.PI * 0.5;
+  let originTo    = -Math.PI * 0.5;
 
   // Lightsaber pointing direction
-  let vecAngle = -0.4;
-  let vecFrom  = -0.4;
-  let vecTo    = -0.4;
+  let vecAngle = -Math.PI * 0.25;
+  let vecFrom  = -Math.PI * 0.25;
+  let vecTo    = -Math.PI * 0.25;
 
   let glowAlpha = 1.0;
 
+  /* Pick new origin in upper half of brain, and new direction */
   function pickNewTarget() {
-    const sweep = Math.PI * 0.5 + Math.random() * Math.PI * 0.67;
-    const dir   = Math.random() < 0.5 ? 1 : -1;
-    originFrom  = originAngle;
-    originTo    = originAngle + dir * sweep;
-    vecFrom     = vecAngle;
-    vecTo       = originTo + (Math.random() - 0.5) * (Math.PI * 0.83);
-    driftDur    = 1500 + Math.random() * 1200;
-    settleDur   = 650  + Math.random() * 550;
-    holdDur     = 2400 + Math.random() * 2200;
+    // Upper-half range: angle in (-pi+margin … -margin) so sin(angle) < 0
+    const margin = 0.18;
+    originFrom = originAngle;
+    originTo   = -(margin + Math.random() * (Math.PI - 2 * margin));
+    // Direction: outward from new site ± up to 60°
+    vecFrom = vecAngle;
+    vecTo   = originTo + (Math.random() - 0.5) * (Math.PI * 0.67);
+    driftDur   = 1800 + Math.random() * 1000;
+    settleDur  = 2600 + Math.random() * 800;   // 2.6 – 3.4 s settle
+    holdDur    = 3000 + Math.random() * 2000;  // 3 – 5 s hold
   }
 
-  /* Returns brain center + radii in canvas-local coords */
+  /* Brain center + radii in canvas coordinates — uses getBoundingClientRect
+     so CSS transform on the gif is correctly accounted for */
   function getBrain() {
-    const gW = gifEl.offsetWidth, gH = gifEl.offsetHeight;
-    if (!gW) return { cx: W * 0.55, cy: H * 0.50, rx: H * 0.22, ry: H * 0.20 };
+    const gifR = gifEl.getBoundingClientRect();
+    const canR = canvas.getBoundingClientRect();
+    if (!gifR.width) return { cx: W*0.55, cy: H*0.55, rx: H*0.20, ry: H*0.18 };
     return {
-      cx: gifEl.offsetLeft + gW * (320 / 640),
-      cy: gifEl.offsetTop  + gH * (230 / 459),
-      rx: gW * (195 / 640),
-      ry: gH * (175 / 459),
+      cx: gifR.left - canR.left + gifR.width  * (320 / 640),
+      cy: gifR.top  - canR.top  + gifR.height * (230 / 459),
+      rx: gifR.width  * (195 / 640),
+      ry: gifR.height * (175 / 459),
     };
   }
 
-  function easeInOut(t) { return t < 0.5 ? 2*t*t : -1 + (4 - 2*t)*t; }
-
+  function easeInOut(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
   function lerpAngle(a, b, t) {
     let d = b - a;
-    while (d >  Math.PI) d -= Math.PI * 2;
-    while (d < -Math.PI) d += Math.PI * 2;
+    while (d >  Math.PI) d -= Math.PI*2;
+    while (d < -Math.PI) d += Math.PI*2;
     return a + d * t;
   }
 
-  /* ── Lightsaber rendering ── */
+  /* ── Neon-purple lightsaber ── */
   function drawSaber(ox, oy, angle, len, alpha) {
     const ex = ox + Math.cos(angle) * len;
     const ey = oy + Math.sin(angle) * len;
 
-    // Glow layers outer->inner
+    // Glow layers: outer (wide, dim) → inner (narrow, bright)
+    // Palette: deep purple outer → violet mid → white-purple core
     const layers = [
-      { w: 24, a: 0.05, r: 60,  g: 150, b: 255 },
-      { w: 15, a: 0.11, r: 90,  g: 180, b: 255 },
-      { w: 8,  a: 0.24, r: 140, g: 210, b: 255 },
-      { w: 4,  a: 0.52, r: 200, g: 235, b: 255 },
-      { w: 1.6,a: 0.94, r: 245, g: 252, b: 255 },
+      { w: 26, a: 0.06, r:100, g: 40, b:200 },
+      { w: 16, a: 0.13, r:140, g: 70, b:240 },
+      { w: 9,  a: 0.28, r:167, g:110, b:250 },
+      { w: 4.5,a: 0.58, r:200, g:160, b:255 },
+      { w: 1.8,a: 0.96, r:235, g:220, b:255 },
     ];
     ctx.lineCap = 'round';
     for (const l of layers) {
       ctx.beginPath();
       ctx.moveTo(ox, oy); ctx.lineTo(ex, ey);
-      ctx.strokeStyle = `rgba(${l.r},${l.g},${l.b},${(l.a * alpha).toFixed(3)})`;
+      ctx.strokeStyle = `rgba(${l.r},${l.g},${l.b},${(l.a*alpha).toFixed(3)})`;
       ctx.lineWidth = l.w;
       ctx.stroke();
     }
 
-    // Arrowhead
+    // Arrowhead — bright violet
     const hLen = Math.max(10, len * 0.10);
     const hA   = Math.PI / 5.5;
     ctx.beginPath();
@@ -686,25 +671,25 @@
     ctx.lineTo(ex - hLen*Math.cos(angle-hA), ey - hLen*Math.sin(angle-hA));
     ctx.lineTo(ex - hLen*Math.cos(angle+hA), ey - hLen*Math.sin(angle+hA));
     ctx.closePath();
-    ctx.fillStyle = `rgba(220,242,255,${(0.88*alpha).toFixed(3)})`;
+    ctx.fillStyle = `rgba(210,180,255,${(0.90*alpha).toFixed(3)})`;
     ctx.fill();
 
-    // lambda-v label at tip
-    ctx.font = `bold ${Math.max(11, len * 0.09)}px 'JetBrains Mono', monospace`;
-    ctx.fillStyle = `rgba(224,184,74,${(0.86*alpha).toFixed(3)})`;
-    ctx.fillText('\u03bbv', ex + Math.cos(angle)*15, ey + Math.sin(angle)*15 + 4);
+    // λv gold label at tip
+    ctx.font = `bold ${Math.max(11, len*0.09)}px 'JetBrains Mono',monospace`;
+    ctx.fillStyle = `rgba(224,184,74,${(0.88*alpha).toFixed(3)})`;
+    ctx.fillText('\u03bbv', ex+Math.cos(angle)*15, ey+Math.sin(angle)*15+4);
 
-    // Origin: pulsing spark
-    const pulse = 0.5 + 0.5 * Math.sin(performance.now() * 0.006);
-    const dr    = 3.5 + pulse * 3;
-    const dg    = ctx.createRadialGradient(ox, oy, 0, ox, oy, dr * 3);
-    dg.addColorStop(0,   `rgba(180,225,255,${(0.88*alpha).toFixed(3)})`);
-    dg.addColorStop(0.45,`rgba(100,175,255,${(0.38*alpha).toFixed(3)})`);
-    dg.addColorStop(1,   'rgba(70,130,255,0)');
-    ctx.beginPath(); ctx.arc(ox, oy, dr*3, 0, Math.PI*2);
-    ctx.fillStyle = dg; ctx.fill();
-    ctx.beginPath(); ctx.arc(ox, oy, dr*0.65, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(245,252,255,${(0.96*alpha).toFixed(3)})`; ctx.fill();
+    // Origin: pulsing violet spark
+    const pulse = 0.5 + 0.5*Math.sin(performance.now()*0.006);
+    const dr    = 4 + pulse*3.5;
+    const dg    = ctx.createRadialGradient(ox,oy,0, ox,oy,dr*3.2);
+    dg.addColorStop(0,   `rgba(200,160,255,${(0.92*alpha).toFixed(3)})`);
+    dg.addColorStop(0.45,`rgba(140,80,240,${(0.40*alpha).toFixed(3)})`);
+    dg.addColorStop(1,   'rgba(100,40,200,0)');
+    ctx.beginPath(); ctx.arc(ox,oy,dr*3.2,0,Math.PI*2);
+    ctx.fillStyle=dg; ctx.fill();
+    ctx.beginPath(); ctx.arc(ox,oy,dr*0.6,0,Math.PI*2);
+    ctx.fillStyle=`rgba(240,225,255,${(0.97*alpha).toFixed(3)})`; ctx.fill();
   }
 
   /* ── Stars ── */
@@ -714,62 +699,65 @@
   }
   function initStars() {
     stars = [];
-    const N = Math.min(220, Math.floor(W * H / 5000));
-    for (let i = 0; i < N; i++) {
-      stars.push({
-        x: Math.random()*W, y: Math.random()*H,
-        r: 0.2 + Math.random()*1.2,
-        alpha: 0.10 + Math.random()*0.80,
-        phase: Math.random()*Math.PI*2,
-        speed: 0.0004 + Math.random()*0.0014,
-      });
-    }
+    const N = Math.min(200, Math.floor(W*H/5500));
+    for (let i=0; i<N; i++) stars.push({
+      x:Math.random()*W, y:Math.random()*H,
+      r:0.2+Math.random()*1.2,
+      alpha:0.10+Math.random()*0.75,
+      phase:Math.random()*Math.PI*2,
+      speed:0.0004+Math.random()*0.0013,
+    });
   }
   function drawStars(dt) {
     for (const s of stars) {
-      const tw = 0.55 + 0.45*Math.sin(dt*s.speed + s.phase);
-      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(190,210,255,${s.alpha*tw})`; ctx.fill();
+      const tw = 0.55+0.45*Math.sin(dt*s.speed+s.phase);
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(190,210,255,${s.alpha*tw})`; ctx.fill();
     }
   }
 
-  /* ── Main draw ── */
+  /* ── Main loop ── */
   function draw(ts) {
-    if (!t0) { t0 = ts; stateStart = ts; pickNewTarget(); }
+    if (!t0) { t0=ts; stateStart=ts; pickNewTarget(); }
     const dt      = ts - t0;
     const elapsed = ts - stateStart;
 
     // State transitions
-    if      (state === S.HOLD   && elapsed > holdDur)   { state = S.DRIFT;  stateStart = ts; pickNewTarget(); }
-    else if (state === S.DRIFT  && elapsed > driftDur)  { state = S.SETTLE; stateStart = ts; originAngle = originTo; vecAngle = vecTo; }
-    else if (state === S.SETTLE && elapsed > settleDur) { state = S.HOLD;   stateStart = ts; }
+    if      (state===S.DRIFT  && elapsed>driftDur)  { state=S.SETTLE; stateStart=ts; originAngle=originTo; vecAngle=vecTo; }
+    else if (state===S.SETTLE && elapsed>settleDur) { state=S.HOLD;   stateStart=ts; }
+    else if (state===S.HOLD   && elapsed>holdDur)   { state=S.DRIFT;  stateStart=ts; pickNewTarget(); }
 
-    // Compute display angles
     let dispOrigin, dispVec;
-    if (state === S.DRIFT) {
-      const p   = easeInOut(Math.min(elapsed / driftDur, 1));
+
+    if (state===S.DRIFT) {
+      const p   = easeInOut(Math.min(elapsed/driftDur, 1));
       dispOrigin = lerpAngle(originFrom, originTo, p);
       dispVec    = lerpAngle(vecFrom,    vecTo,    p);
-      glowAlpha  = 0.55 + 0.45*(1 - Math.abs(p - 0.5)*2);
-    } else if (state === S.SETTLE) {
+      glowAlpha  = 0.90;  // stays bright during travel — no fade
+
+    } else if (state===S.SETTLE) {
       dispOrigin = originAngle;
-      const p    = Math.min(elapsed / settleDur, 1);
-      const damp = Math.exp(-p * 4.0);
-      dispVec    = vecAngle + damp * Math.cos(p * 15) * (Math.PI * 0.09);
-      glowAlpha  = 0.65 + 0.35*(1 - damp);
-    } else {
+      const p    = Math.min(elapsed/settleDur, 1);
+      // Slow large-amplitude precession, damped to lock (~3s)
+      // Large initial deviation (±25°), slowly spirals to target
+      const damp = Math.exp(-p * 2.2);
+      const prec = damp * Math.cos(p * 7.5) * (Math.PI * 0.28);
+      dispVec    = vecAngle + prec;
+      glowAlpha  = 0.72 + 0.28*(1-damp);
+
+    } else { // HOLD
       dispOrigin = originAngle;
       dispVec    = vecAngle;
-      glowAlpha  = 0.88 + 0.12*Math.sin(dt * 0.0017);
+      glowAlpha  = 0.88 + 0.12*Math.sin(dt*0.0016); // slow breathe
     }
 
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0,0,W,H);
     drawStars(dt);
 
     const b   = getBrain();
-    const ox  = b.cx + b.rx * Math.cos(dispOrigin);
-    const oy  = b.cy + b.ry * Math.sin(dispOrigin);
-    const len = (b.rx + b.ry) * 0.80;
+    const ox  = b.cx + b.rx*Math.cos(dispOrigin);
+    const oy  = b.cy + b.ry*Math.sin(dispOrigin);
+    const len = (b.rx + b.ry) * 0.82;
 
     drawSaber(ox, oy, dispVec, len, glowAlpha);
   }
