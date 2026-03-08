@@ -55,6 +55,7 @@
     nav ul a:hover { color: var(--text); }
     .nav-right {
       flex: 0 0 auto;
+      margin-left: auto;
       display: flex; flex-direction: column; align-items: flex-end;
       gap: .12rem; padding: .35rem 0;
     }
@@ -81,13 +82,13 @@
       position: absolute; z-index: 1;
       width: clamp(280px, 48vw, 620px);
       height: auto;
-      left: 55%; bottom: -3vh; top: auto;
+      left: 75%; bottom: 7vh; top: auto;
       transform: translateX(-50%);
       pointer-events: none;
       mix-blend-mode: screen;
     }
     @media (max-width: 640px) {
-      #brain-gif { width: clamp(240px, 85vw, 380px); left: 50%; bottom: -2vh; }
+      #brain-gif { width: clamp(240px, 85vw, 380px); left: 70%; bottom: 5vh; }
     }
 
     /* ── HERO ── */
@@ -127,6 +128,11 @@
     .hero-floor-right {
       font-size: clamp(.58rem, 1.0vw, .72rem);
       color: var(--accent2); opacity: .72; white-space: nowrap;
+    }
+    @media (max-width: 640px) {
+      .hero-floor { flex-direction: column; align-items: flex-start; gap: .3rem; padding: .55rem 1.25rem; }
+      .hero-floor-left { font-size: .72rem; }
+      .hero-floor-right { white-space: normal; font-size: .66rem; line-height: 1.45; }
     }
 
     h1 {
