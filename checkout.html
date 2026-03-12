@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout — MindEigen</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #07080f; color: #e8eaf2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+    nav { padding: 18px 28px; border-bottom: 1px solid #1a1a2e; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-family: monospace; font-size: 1.05rem; color: #5b8dee; text-decoration: none; }
+    .logo span { color: #e8eaf2; }
+    .nav-link { color: #9ca3af; font-size: 0.85rem; text-decoration: none; }
+
+    main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 48px 20px; gap: 40px; flex-wrap: wrap; }
+
+    .checkout-card { background: #0e0f1a; border: 1px solid #1e2235; border-radius: 16px; padding: 32px; width: 100%; max-width: 420px; }
+    h1 { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+    .plan-desc { color: #9ca3af; font-size: 0.88rem; margin-bottom: 24px; }
+
+    .plan-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #1e2235; }
+    .plan-row:last-of-type { border-bottom: none; }
+    .plan-label { color: #9ca3af; font-size: 0.88rem; }
+    .plan-value { font-size: 0.92rem; font-weight: 600; }
+    .plan-value.strike { text-decoration: line-through; color: #4a5070; font-weight: 400; }
+    .plan-value.green { color: #34d399; }
+    .plan-value.big { font-size: 1.4rem; color: #e8eaf2; }
+
+    .coupon-section { margin: 20px 0; }
+    .coupon-label { font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; color: #6060aa; margin-bottom: 8px; }
+    .coupon-row { display: flex; gap: 8px; }
+    .coupon-input { flex: 1; background: #12131f; border: 1px solid #2a2f4a; border-radius: 8px; padding: 9px 14px; color: #e8eaf2; font-size: 0.875rem; outline: none; font-family: monospace; }
+    .coupon-input:focus { border-color: #a78bfa; }
+    .coupon-btn { background: #1e1e35; border: 1px solid #2a2f4a; color: #9ca3af; border-radius: 8px; padding: 9px 16px; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
+    .coupon-btn:hover { border-color: #a78bfa; color: #a78bfa; }
+    .coupon-status { font-size: 0.8rem; margin-top: 6px; display: none; }
+    .coupon-status.applied { color: #34d399; display: block; }
+    .coupon-status.invalid { color: #f87171; display: block; }
+
+    .form-section { margin-top: 20px; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.78rem; letter-spacing: 0.5px; color: #6060aa; margin-bottom: 6px; }
+    input[type="text"], input[type="email"] {
+      width: 100%; background: #12131f; border: 1px solid #2a2f4a;
+      border-radius: 8px; padding: 10px 14px; color: #e8eaf2;
+      font-size: 0.9rem; outline: none;
+    }
+    input:focus { border-color: #5b8dee; }
+
+    .submit-btn {
+      width: 100%; background: #5b8dee; color: #07080f; border: none;
+      border-radius: 10px; padding: 13px; font-size: 0.95rem; font-weight: 700;
+      cursor: pointer; margin-top: 6px; transition: opacity 0.15s;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .secure-note { text-align: center; color: #404060; font-size: 0.75rem; margin-top: 12px; }
+
+    /* Success state */
+    .success-screen { display: none; text-align: center; padding: 20px 0; }
+    .success-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .success-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+    .success-body { color: #9ca3af; font-size: 0.88rem; line-height: 1.6; margin-bottom: 20px; }
+    .success-code { font-family: monospace; font-size: 1rem; color: #a78bfa; background: rgba(167,139,250,.1); padding: 4px 12px; border-radius: 6px; }
+
+    /* Summary panel */
+    .summary-panel { width: 100%; max-width: 300px; }
+    .summary-panel h2 { font-size: 0.85rem; font-weight: 700; color: #9ca3af; margin-bottom: 16px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .feature { display: flex; gap: 10px; margin-bottom: 12px; font-size: 0.875rem; color: #9ca3af; line-height: 1.4; }
+    .feature .check { color: #5b8dee; flex-shrink: 0; }
+    .early-note { margin-top: 20px; background: rgba(167,139,250,.06); border: 1px solid rgba(167,139,250,.15); border-radius: 10px; padding: 14px 16px; font-size: 0.82rem; color: #9090aa; line-height: 1.5; }
+    .early-note strong { color: #a78bfa; }
+
+    @media (max-width: 600px) { .summary-panel { display: none; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="/">mind<span>eigen</span></a>
+  <a class="nav-link" href="pricing.html">← Pricing</a>
+</nav>
+
+<main>
+
+  <div class="summary-panel">
+    <h2>Personal Plan</h2>
+    <div class="feature"><span class="check">✓</span> 1 persistent agent, always on</div>
+    <div class="feature"><span class="check">✓</span> Unlimited memory depth</div>
+    <div class="feature"><span class="check">✓</span> Nightly self-improvement cycles</div>
+    <div class="feature"><span class="check">✓</span> Voice, Telegram, web interface</div>
+    <div class="feature"><span class="check">✓</span> Community skill graph access</div>
+    <div class="feature"><span class="check">✓</span> Daily digests + proactive outreach</div>
+    <div class="early-note">
+      <strong>Early access program.</strong> You're joining before launch. No charges until we go live — and when we do, your 50% discount is locked in permanently.
+    </div>
+  </div>
+
+  <div class="checkout-card" id="checkout-card">
+    <div id="checkout-form-view">
+      <h1>Complete your order</h1>
+      <p class="plan-desc">MindEigen Personal · Monthly</p>
+
+      <div class="plan-row">
+        <span class="plan-label">Plan</span>
+        <span class="plan-value">Personal</span>
+      </div>
+      <div class="plan-row">
+        <span class="plan-label">Regular price</span>
+        <span class="plan-value strike" id="regular-price">$29.00 / mo</span>
+      </div>
+      <div class="plan-row" id="discount-row" style="display:none">
+        <span class="plan-label">Discount (EIGEN50)</span>
+        <span class="plan-value green">−$14.50</span>
+      </div>
+      <div class="plan-row">
+        <span class="plan-label">Due today</span>
+        <span class="plan-value big" id="due-today">$0.00</span>
+      </div>
+      <p style="color:#6060aa;font-size:.75rem;margin-top:6px;">Billing begins at launch. You'll be notified first.</p>
+
+      <div class="coupon-section">
+        <div class="coupon-label">Coupon code</div>
+        <div class="coupon-row">
+          <input class="coupon-input" id="coupon-input" type="text" placeholder="EIGEN50" value="EIGEN50" maxlength="20">
+          <button class="coupon-btn" onclick="applyCoupon()">Apply</button>
+        </div>
+        <div class="coupon-status applied" id="coupon-status">✓ Early adopter discount applied — 50% off at launch</div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-group">
+          <label>Full name</label>
+          <input type="text" id="field-name" placeholder="Your name" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label>Email address</label>
+          <input type="email" id="field-email" placeholder="you@example.com" autocomplete="email">
+        </div>
+      </div>
+
+      <button class="submit-btn" id="submit-btn" onclick="handleSubmit()">Reserve my spot — $0 today</button>
+      <p class="secure-note">🔒 No payment info collected · Billed at launch · Cancel anytime</p>
+    </div>
+
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">🧠</div>
+      <div class="success-title">You're in.</div>
+      <div class="success-body">
+        We've reserved your spot on the Personal plan at 50% off.<br>
+        We'll email you when early access opens with everything you need to get started.<br><br>
+        Your discount code: <span class="success-code">EIGEN50</span>
+      </div>
+      <a href="/" style="color:#5b8dee;font-size:.88rem;text-decoration:none;">← Back to home</a>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = 'https://api.mindeigen.com';
+const VALID_COUPONS = { 'EIGEN50': { label: '50% off at launch', discount: '−$14.50' } };
+let couponApplied = false;
+
+function applyCoupon() {
+  const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+  const status = document.getElementById('coupon-status');
+  const discountRow = document.getElementById('discount-row');
+  if (VALID_COUPONS[code]) {
+    status.textContent = '✓ ' + VALID_COUPONS[code].label;
+    status.className = 'coupon-status applied';
+    discountRow.style.display = 'flex';
+    couponApplied = true;
+  } else if (code) {
+    status.textContent = '✗ Invalid coupon code';
+    status.className = 'coupon-status invalid';
+    discountRow.style.display = 'none';
+    couponApplied = false;
+  }
+}
+
+// Auto-apply on load
+window.addEventListener('DOMContentLoaded', () => applyCoupon());
+
+function handleSubmit() {
+  const name = document.getElementById('field-name').value.trim();
+  const email = document.getElementById('field-email').value.trim();
+  const btn = document.getElementById('submit-btn');
+
+  if (!name) { document.getElementById('field-name').focus(); return; }
+  if (!email || !email.includes('@')) { document.getElementById('field-email').focus(); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Reserving…';
+
+  // Submit to waitlist API
+  fetch(API + '/waitlist', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, name, coupon: 'EIGEN50', source: 'checkout' })
+  })
+  .then(r => r.json())
+  .catch(() => ({ status: 'ok' }))  // show success even if API hiccups
+  .then(() => {
+    document.getElementById('checkout-form-view').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+  });
+}
+</script>
+
+</body>
+</html>
