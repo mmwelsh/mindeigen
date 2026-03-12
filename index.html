@@ -826,6 +826,12 @@ function handleSubmit(e) {
       if (data.status === 'ok') {
         const count = document.getElementById('count-display');
         count.textContent = parseInt(count.textContent) + 1;
+        // Show pricing nudge
+        const form = btn.closest('form') || btn.parentElement;
+        const nudge = document.createElement('p');
+        nudge.style.cssText = 'margin-top:12px;font-size:.82rem;color:#9ca3af;';
+        nudge.innerHTML = 'Use code <code style="color:#a78bfa;background:rgba(167,139,250,.12);padding:2px 6px;border-radius:4px">EIGEN50</code> at launch for 50% off · <a href="pricing.html" style="color:#5b8dee">See pricing →</a>';
+        form.appendChild(nudge);
       }
     } else {
       reset('Try again');
