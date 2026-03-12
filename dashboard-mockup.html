@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindEigen — Agent Dashboard (Mockup)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07080f;
+      --surface: #0e0f1a;
+      --surface2: #12131f;
+      --border: #1e2235;
+      --text: #e8eaf2;
+      --dim: #9ca3af;
+      --dimmer: #4a5070;
+      --accent: #5b8dee;
+      --purple: #a78bfa;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+    }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
+
+    /* Layout */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-logo { padding: 20px 16px 16px; font-family: monospace; font-size: 1rem; color: var(--accent); letter-spacing: -0.02em; border-bottom: 1px solid var(--border); }
+    .sidebar-logo span { color: var(--text); }
+    .sidebar-section { padding: 12px 8px 4px; font-size: 0.65rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dimmer); }
+    .sidebar-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 6px; margin: 1px 6px; color: var(--dim); cursor: pointer; transition: all 0.15s; font-size: 0.875rem; }
+    .sidebar-item:hover { background: var(--surface2); color: var(--text); }
+    .sidebar-item.active { background: rgba(91,141,238,.12); color: var(--accent); }
+    .sidebar-item .icon { width: 16px; text-align: center; font-size: 0.9rem; }
+    .sidebar-item .badge { margin-left: auto; background: var(--accent); color: var(--bg); font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+    .sidebar-footer { margin-top: auto; padding: 12px; border-top: 1px solid var(--border); }
+    .agent-card { background: var(--surface2); border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }
+    .agent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; box-shadow: 0 0 6px var(--green); }
+    .agent-name { font-weight: 600; font-size: 0.85rem; }
+    .agent-status { color: var(--dim); font-size: 0.75rem; }
+
+    /* Main */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* Topbar */
+    .topbar { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .topbar-title { font-weight: 700; font-size: 1rem; }
+    .topbar-meta { color: var(--dim); font-size: 0.8rem; }
+    .topbar-actions { display: flex; gap: 10px; align-items: center; }
+    .btn { padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.15s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: var(--accent); color: var(--bg); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--dim); }
+
+    /* Content area */
+    .content { flex: 1; overflow-y: auto; padding: 20px 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto 1fr; gap: 16px; }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .card-title { font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: var(--dimmer); margin-bottom: 10px; }
+    .card-value { font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; }
+    .card-sub { color: var(--dim); font-size: 0.8rem; margin-top: 4px; }
+    .card-trend { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; padding: 2px 8px; border-radius: 20px; margin-top: 6px; }
+    .trend-up { background: rgba(52,211,153,.1); color: var(--green); }
+    .trend-down { background: rgba(248,113,113,.1); color: var(--red); }
+
+    /* Memory feed */
+    .memory-card { grid-column: span 2; }
+    .memory-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .memory-item:last-child { border-bottom: none; }
+    .mem-score { font-family: monospace; font-size: 0.75rem; color: var(--accent); min-width: 38px; }
+    .mem-source { font-size: 0.7rem; color: var(--purple); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+    .mem-text { color: var(--dim); font-size: 0.82rem; line-height: 1.4; }
+
+    /* Skills panel */
+    .skill-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+    .skill-item:last-child { border-bottom: none; }
+    .skill-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .skill-name { flex: 1; font-size: 0.85rem; }
+    .skill-conf { font-family: monospace; font-size: 0.75rem; color: var(--dim); }
+    .conf-bar { width: 60px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .conf-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+
+    /* Conversation panel */
+    .chat-panel { grid-column: span 3; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; min-height: 280px; }
+    .chat-header { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--dimmer); letter-spacing: 1px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+    .chat-messages { flex: 1; padding: 14px 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .msg { max-width: 80%; }
+    .msg-user { align-self: flex-end; }
+    .msg-agent { align-self: flex-start; }
+    .msg-bubble { padding: 9px 14px; border-radius: 12px; font-size: 0.875rem; line-height: 1.5; }
+    .msg-user .msg-bubble { background: var(--accent); color: var(--bg); border-radius: 12px 12px 2px 12px; }
+    .msg-agent .msg-bubble { background: var(--surface2); color: var(--text); border-radius: 12px 12px 12px 2px; }
+    .msg-meta { font-size: 0.7rem; color: var(--dimmer); margin-top: 3px; text-align: right; }
+    .msg-agent .msg-meta { text-align: left; }
+    .chat-input { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+    .chat-input input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--text); font-size: 0.875rem; outline: none; }
+    .chat-input input::placeholder { color: var(--dimmer); }
+    .chat-input input:focus { border-color: var(--accent); }
+
+    /* Evolution cycle indicator */
+    .cycle-card { background: linear-gradient(135deg, rgba(167,139,250,.08), rgba(91,141,238,.04)); border-color: rgba(167,139,250,.2); }
+    .cycle-gene { font-family: monospace; font-size: 0.75rem; color: var(--purple); }
+    .cycle-bar { height: 6px; background: var(--border); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+    .cycle-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--purple), var(--accent)); width: 73%; }
+
+    .mockup-badge { position: fixed; bottom: 16px; right: 16px; background: rgba(251,191,36,.15); border: 1px solid rgba(251,191,36,.3); color: var(--yellow); font-size: 0.7rem; padding: 4px 10px; border-radius: 6px; font-family: monospace; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">mind<span>eigen</span></div>
+
+    <div style="padding: 8px 6px;">
+      <div class="sidebar-section">Agent</div>
+      <div class="sidebar-item active"><span class="icon">⬡</span> Overview</div>
+      <div class="sidebar-item"><span class="icon">💬</span> Chat <span class="badge">3</span></div>
+      <div class="sidebar-item"><span class="icon">🧠</span> Memory</div>
+      <div class="sidebar-item"><span class="icon">⚙️</span> Skills</div>
+
+      <div class="sidebar-section">Evolution</div>
+      <div class="sidebar-item"><span class="icon">🧬</span> Cycles</div>
+      <div class="sidebar-item"><span class="icon">📊</span> Capabilities</div>
+      <div class="sidebar-item"><span class="icon">🔮</span> Predictions</div>
+
+      <div class="sidebar-section">System</div>
+      <div class="sidebar-item"><span class="icon">📅</span> Schedule</div>
+      <div class="sidebar-item"><span class="icon">📦</span> Backups</div>
+      <div class="sidebar-item"><span class="icon">🔑</span> Settings</div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="agent-card">
+        <div class="agent-dot"></div>
+        <div>
+          <div class="agent-name">Your Agent</div>
+          <div class="agent-status">Online · repair_mode</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Agent Overview</div>
+        <div class="topbar-meta">Last cycle: 4 hours ago · Next: in 11h 32m</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost">Run cycle now</button>
+        <button class="btn btn-primary">Ask your agent</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- Stat cards -->
+      <div class="card">
+        <div class="card-title">Memory vectors</div>
+        <div class="card-value">2,841</div>
+        <div class="card-sub">384-dim embeddings · Qdrant</div>
+        <div class="card-trend trend-up">↑ +11 today</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Stage 3 readiness</div>
+        <div class="card-value">75%</div>
+        <div class="card-sub">Self-directed RSI</div>
+        <div class="card-trend trend-up">↑ +8% this week</div>
+      </div>
+
+      <div class="card cycle-card">
+        <div class="card-title">Evolution cycle</div>
+        <div class="card-value" style="font-size:1.3rem;">gene_innovate</div>
+        <div class="cycle-gene">gene_innovate_with_record · score 0.85</div>
+        <div class="cycle-bar"><div class="cycle-fill"></div></div>
+      </div>
+
+      <!-- Memory feed -->
+      <div class="card memory-card">
+        <div class="card-title">Recent memory retrievals</div>
+        <div class="memory-item">
+          <div>
+            <div class="mem-source">hebbian-retrieval-arch.md</div>
+            <div class="mem-text">Memory infrastructure ROI exceeds model capability ROI at current margin — investing in retrieval quality compounds faster than model swaps.</div>
+          </div>
+          <div class="mem-score">0.807</div>
+        </div>
+        <div class="memory-item">
+          <div>
+            <div class="mem-source">projects/self-improvement-loop.md</div>
+            <div class="mem-text">Full loop (act → observe → update self-model → rerank → act) not yet closed. Gap: 0.70 weighted.</div>
+          </div>
+          <div class="mem-score">0.791</div>
+        </div>
+        <div class="memory-item">
+          <div>
+            <div class="mem-source">MEMORY.md</div>
+            <div class="mem-text">Primary model: openrouter/anthropic/claude-sonnet-4-6. Subagent model: openrouter/google/gemini-2.5-flash.</div>
+          </div>
+          <div class="mem-score">0.756</div>
+        </div>
+        <div class="memory-item">
+          <div>
+            <div class="mem-source">2026-03-12.md</div>
+            <div class="mem-text">Executor dedup fixed. Evolver scope violations cleared. Gene validation unblocked. World-model-core.md created.</div>
+          </div>
+          <div class="mem-score">0.741</div>
+        </div>
+      </div>
+
+      <!-- Capabilities -->
+      <div class="card">
+        <div class="card-title">Top capabilities</div>
+        <div class="skill-item">
+          <div class="skill-dot" style="background:#34d399"></div>
+          <div class="skill-name">web_search</div>
+          <div class="skill-conf">0.90</div>
+          <div class="conf-bar"><div class="conf-fill" style="width:90%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-dot" style="background:#34d399"></div>
+          <div class="skill-name">voice_transcription</div>
+          <div class="skill-conf">0.85</div>
+          <div class="conf-bar"><div class="conf-fill" style="width:85%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-dot" style="background:#5b8dee"></div>
+          <div class="skill-name">evolver_cycles</div>
+          <div class="skill-conf">0.58</div>
+          <div class="conf-bar"><div class="conf-fill" style="width:58%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-dot" style="background:#a78bfa"></div>
+          <div class="skill-name">global_state_mod</div>
+          <div class="skill-conf">0.55</div>
+          <div class="conf-bar"><div class="conf-fill" style="width:55%"></div></div>
+        </div>
+        <div class="skill-item">
+          <div class="skill-dot" style="background:#fbbf24"></div>
+          <div class="skill-name">reentrant_loop</div>
+          <div class="skill-conf">0.30</div>
+          <div class="conf-bar"><div class="conf-fill" style="width:30%"></div></div>
+        </div>
+      </div>
+
+      <!-- Chat -->
+      <div class="chat-panel">
+        <div class="chat-header">
+          <span>Conversation</span>
+          <span style="color:var(--green);">● Live</span>
+        </div>
+        <div class="chat-messages">
+          <div class="msg msg-user">
+            <div class="msg-bubble">What's the actual science on daily water intake?</div>
+            <div class="msg-meta">Mike · 14:52</div>
+          </div>
+          <div class="msg msg-agent">
+            <div class="msg-bubble">NASA's 1999 fluid nutrition report states it plainly: food provides approximately 70% of water intake. Genuine drinking requirement is ~1–1.5L/day for a sedentary adult. The 8x8 rule overstates it by ~50–100%.</div>
+            <div class="msg-meta">Agent · 14:56 · retrieved 4 memories</div>
+          </div>
+          <div class="msg msg-user">
+            <div class="msg-bubble">Continue the self-improvement task list autonomously.</div>
+            <div class="msg-meta">Mike · 15:56</div>
+          </div>
+          <div class="msg msg-agent">
+            <div class="msg-bubble">Proceeding. Gene validation unblocked, global state wired, world model core created, 12 commits shipped. Continuing.</div>
+            <div class="msg-meta">Agent · 16:28 · 12 tools used</div>
+          </div>
+        </div>
+        <div class="chat-input">
+          <input placeholder="Ask your agent anything...">
+          <button class="btn btn-primary">Send</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="mockup-badge">MOCKUP — not functional</div>
+
+</body>
+</html>
